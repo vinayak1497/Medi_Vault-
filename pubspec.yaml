@@ -18,7 +18,6 @@ dependencies:
   firebase_database: ^11.0.0
   # For storing image files of scanned documents.
   firebase_storage: ^12.0.0
-
   # For camera access and picking images from the gallery.
   image_picker: ^1.1.2
   # For on-device text recognition (OCR).
@@ -35,6 +34,8 @@ dependencies:
   google_maps_flutter: ^2.9.0
   # For HTTP requests to AI services
   http: ^1.2.2
+  # For persisting user preferences
+  shared_preferences: ^2.3.2
   
 dev_dependencies:
   flutter_test:

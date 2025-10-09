@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'screens/auth/auth_screen.dart';
-import 'screens/main_app/main_screen.dart';
+import 'package:flutter/foundation.dart';
+import 'screens/auth/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   await Firebase.initializeApp();
+
+  // Configure Firebase Auth settings for better error handling
+  if (kDebugMode) {
+    // Only for development - disable App Check in debug mode
+    await FirebaseAuth.instance.setSettings(
+      appVerificationDisabledForTesting: true,
+      forceRecaptchaFlow: false,
+    );
+  }
+
   runApp(const MyApp());
 }
 
@@ -28,28 +40,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins',
         useMaterial3: true,
       ),
-      home: AuthWrapper(),
-    );
-  }
-}
-
-// This is a new widget that handles the authentication redirection.
-class AuthWrapper extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        if (snapshot.hasData) {
-          return const MainScreen();
-        }
-        return const AuthScreen();
-      },
+      home: const SplashScreen(),
     );
   }
 }

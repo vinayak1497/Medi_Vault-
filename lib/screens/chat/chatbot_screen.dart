@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health_buddy/services/ai_service.dart';
+import 'dart:async';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -51,7 +52,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
     try {
       // Get AI response with improved prompt
-      final aiResponse = await _aiService.sendMessage(message);
+      final aiResponse = await _aiService
+          .sendMessage(message)
+          .timeout(const Duration(seconds: 30));
 
       // Add AI response
       setState(() {
@@ -62,11 +65,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         });
         _isSending = false;
       });
-    } catch (e) {
+    } on TimeoutException catch (_) {
       setState(() {
         _messages.add({
           'text':
-              'Sorry, I encountered an error: $e. Please check your internet connection and try again.',
+              'Sorry, the request timed out. Please check your internet connection and try again.',
+          'isUser': false,
+          'timestamp': DateTime.now(),
+        });
+        _isSending = false;
+      });
+    } catch (e) {
+      String errorMessage = 'Sorry, I encountered an error: ${e.toString()}. ';
+      if (e.toString().contains('API key')) {
+        errorMessage +=
+            'Please check your Gemini API key configuration in lib/utils/constants.dart. See README.md for instructions.';
+      } else if (e.toString().contains('endpoint not found')) {
+        errorMessage +=
+            'The API endpoint may be incorrect. Please check lib/services/ai_service.dart for the correct model name.';
+      } else {
+        errorMessage += 'Please check your internet connection and try again.';
+      }
+
+      setState(() {
+        _messages.add({
+          'text': errorMessage,
           'isUser': false,
           'timestamp': DateTime.now(),
         });

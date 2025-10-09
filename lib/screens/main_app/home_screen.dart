@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leadingWidth: 150,
+        leadingWidth: 180,
         leading: GestureDetector(
           onTap: _showFamilySelector,
           child: Padding(
@@ -103,9 +103,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Icon(Icons.person, size: 20),
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  _activeFamilyMember?['name'] ?? 'Loading...',
-                  style: Theme.of(context).textTheme.titleLarge,
+                Expanded(
+                  child: Text(
+                    _activeFamilyMember?['name'] ?? 'Loading...',
+                    style: Theme.of(context).textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
               ],
             ),

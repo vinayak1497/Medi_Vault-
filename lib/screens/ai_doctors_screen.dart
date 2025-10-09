@@ -156,7 +156,7 @@ class _AIDoctorsScreenState extends State<AIDoctorsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Doctor Finder'),
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
       body: RefreshIndicator(

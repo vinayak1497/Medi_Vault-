@@ -51,11 +51,15 @@ A comprehensive health management Flutter application with AI chatbot, doctor lo
      - iOS: `ios/Runner/AppDelegate.swift`
 
 5. **Gemini API Setup:**
-   - Get a Google Gemini API key from Google AI Studio
+   - Go to https://aistudio.google.com/
+   - Sign in with your Google account
+   - Create a new API key from the "API Key" section
+   - Copy the API key
    - Add your API key to `lib/utils/constants.dart`:
      ```dart
-     static const String geminiApiKey = 'YOUR_ACTUAL_API_KEY_HERE';
+     static const String apiKey = 'YOUR_ACTUAL_GEMINI_API_KEY_HERE';
      ```
+   - **Important**: Never commit your actual API key to version control
 
 6. **Run the app:**
    ```bash
@@ -102,6 +106,20 @@ To use this feature:
 2. Grant location permissions when prompted
 3. The app will automatically find doctors near you
 4. View doctor details in the card-based list
+
+## Troubleshooting
+
+### API Key Issues
+If you're seeing "API key configuration" errors:
+1. Make sure you have created a valid Gemini API key at https://aistudio.google.com/
+2. Ensure the API key is correctly placed in `lib/utils/constants.dart`
+3. Check that the API key has not expired
+4. Verify that you have enabled the Generative Language API in Google Cloud Console
+
+### Common Error Messages
+- "API key is missing": The apiKey field in constants.dart is empty
+- "API key authentication failed": The API key is invalid or expired
+- "Access forbidden": The API key doesn't have proper permissions
 
 ## Contributing
 

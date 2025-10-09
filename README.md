@@ -1,4 +1,4 @@
-# Health Buddy
+# MediVault-AI
 
 A comprehensive health management Flutter application with AI chatbot, doctor locator, and government schemes information.
 

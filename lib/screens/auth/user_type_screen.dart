@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:health_buddy/screens/auth/doctor_signup_screen.dart';
-import 'package:health_buddy/screens/auth/auth_screen.dart';
+import 'package:health_buddy/screens/auth/doctor_signup_step1_screen.dart';
+import 'package:health_buddy/screens/common/auth/signup_screen.dart';
 
 class UserTypeScreen extends StatelessWidget {
   const UserTypeScreen({super.key});
@@ -8,7 +8,7 @@ class UserTypeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -46,7 +46,9 @@ class UserTypeScreen extends StatelessWidget {
                   // Navigate to patient auth flow
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const AuthScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const SignupScreen(),
+                    ),
                   );
                 },
               ),
@@ -65,7 +67,7 @@ class UserTypeScreen extends StatelessWidget {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const DoctorSignupScreen(),
+                      builder: (context) => const DoctorSignupStep1Screen(),
                     ),
                   );
                 },

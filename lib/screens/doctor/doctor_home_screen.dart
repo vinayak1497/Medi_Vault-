@@ -4,6 +4,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:health_buddy/screens/doctor/nmc_verification_screen.dart';
+import 'package:health_buddy/widgets/verification_badge.dart';
 
 class DoctorHomeScreen extends StatefulWidget {
   const DoctorHomeScreen({super.key});
@@ -25,6 +27,29 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
     super.initState();
   }
 
+  Future<bool> _checkVerificationStatus() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final DatabaseReference userRef = FirebaseDatabase.instance
+            .ref()
+            .child('doctors')
+            .child(user.uid);
+
+        final snapshot = await userRef.get();
+        if (snapshot.exists) {
+          final userData = Map<String, dynamic>.from(snapshot.value as Map);
+          return userData['verified'] == true ||
+              userData['nmcVerified'] == true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print('Error checking verification status: $e');
+      return false;
+    }
+  }
+
   void _startListening() async {
     bool available = await _speech.initialize(
       onStatus: (status) => print('Status: $status'),
@@ -34,10 +59,11 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
     if (available) {
       setState(() => _isListening = true);
       _speech.listen(
-        onResult: (result) => setState(() {
-          _transcribedText = result.recognizedWords;
-          _editedText = result.recognizedWords;
-        }),
+        onResult:
+            (result) => setState(() {
+              _transcribedText = result.recognizedWords;
+              _editedText = result.recognizedWords;
+            }),
       );
     }
   }
@@ -60,8 +86,12 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
       try {
         // Process the image with ML Kit
         final inputImage = InputImage.fromFilePath(pickedFile.path);
-        final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-        final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+        final textRecognizer = TextRecognizer(
+          script: TextRecognitionScript.latin,
+        );
+        final RecognizedText recognizedText = await textRecognizer.processImage(
+          inputImage,
+        );
 
         String extractedText = '';
         for (TextBlock block in recognizedText.blocks) {
@@ -186,8 +216,14 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Doctor Dashboard'),
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Center(child: const VerificationBadge()),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -196,21 +232,94 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
           children: [
             const Text(
               'Welcome, Doctor!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             const Text(
               'Start a new session or scan a prescription',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
-            const SizedBox(height: 40),
-            
+            const SizedBox(height: 20),
+
+            // Verification Status Card
+            FutureBuilder<bool>(
+              future: _checkVerificationStatus(),
+              builder: (context, snapshot) {
+                final isVerified = snapshot.data ?? false;
+                return Card(
+                  elevation: 2,
+                  color: isVerified ? Colors.green[50] : Colors.orange[50],
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isVerified ? Icons.verified : Icons.warning,
+                          color:
+                              isVerified
+                                  ? Colors.green[600]
+                                  : Colors.orange[600],
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                isVerified
+                                    ? 'NMC Verified'
+                                    : 'NMC Verification Pending',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      isVerified
+                                          ? Colors.green[700]
+                                          : Colors.orange[700],
+                                ),
+                              ),
+                              Text(
+                                isVerified
+                                    ? 'Your medical credentials have been verified'
+                                    : 'Complete NMC verification to unlock all features',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!isVerified)
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          const NMCVerificationScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange[600],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                            ),
+                            child: const Text('Verify Now'),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+
             // Start Recording Session button
             ElevatedButton.icon(
               onPressed: _isListening ? _stopListening : _startListening,
@@ -230,7 +339,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            
+
             // Transcribed text display
             if (_transcribedText.isNotEmpty) ...[
               Container(
@@ -246,7 +355,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
               ),
               const SizedBox(height: 20),
             ],
-            
+
             // Processing indicator
             if (_isProcessing) ...[
               Row(
@@ -259,7 +368,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
               ),
               const SizedBox(height: 20),
             ],
-            
+
             // OR divider
             const Row(
               children: [
@@ -272,7 +381,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Scan Prescription button
             OutlinedButton.icon(
               onPressed: _isProcessing ? null : _pickImage,
@@ -285,12 +394,10 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
               icon: const Icon(Icons.camera_alt),
               label: const Text(
                 'Scan Prescription',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

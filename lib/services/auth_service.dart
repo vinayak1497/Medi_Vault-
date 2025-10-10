@@ -39,7 +39,9 @@ class AuthService {
       // Step 3: Save user data to database if provided
       if (userData != null && userCredential.user != null) {
         try {
-          final userKey = email.replaceAll('.', ',').replaceAll('@', '_at_');
+          print('🔐 User authenticated: ${userCredential.user!.uid}');
+          print('📧 Email verified: ${userCredential.user!.emailVerified}');
+
           final profileData = {
             ...userData,
             'email': email,
@@ -49,15 +51,34 @@ class AuthService {
             'verified': false,
           };
 
-          await _database
-              .child('${userType}_profiles')
-              .child(userKey)
-              .set(profileData);
-          print('✅ User profile saved to database successfully');
+          // Save to both users collection and specific profile collection for consistency
+          final uid = userCredential.user!.uid;
+
+          // 1. Save to main users collection (for authentication checks)
+          print('💾 Saving to users/$uid');
+          await _database.child('users').child(uid).set(profileData);
+
+          // 2. Save to specific profile collection based on user type
+          final specificPath =
+              userType == 'doctor' ? 'doctor_profiles' : 'patient_profiles';
+          print('� Saving to $specificPath/$uid');
+          await _database.child(specificPath).child(uid).set(profileData);
+
+          print(
+            '✅ User profile saved to database successfully in both locations',
+          );
         } catch (dbError) {
           print(
             '⚠️ Database save failed, but user account was created: $dbError',
           );
+          if (dbError.toString().contains('permission')) {
+            print('🚫 FIREBASE DATABASE RULES ISSUE:');
+            print('   Go to Firebase Console > Realtime Database > Rules');
+            print('   Update rules to allow authenticated users access');
+            print(
+              '   Required: {".read": "auth != null", ".write": "auth != null"}',
+            );
+          }
           // Don't throw here - user account was created successfully
           // The profile can be created later
         }
@@ -132,7 +153,13 @@ class AuthService {
 
   // Sign out
   static Future<void> signOut() async {
-    await _auth.signOut();
+    try {
+      await _auth.signOut();
+      print('✅ User signed out successfully');
+    } catch (e) {
+      print('❌ Error signing out: $e');
+      throw Exception('Failed to sign out: ${e.toString()}');
+    }
   }
 
   // Check if email is valid
@@ -172,6 +199,152 @@ class AuthService {
       });
     } catch (e) {
       throw Exception('Failed to update verification: ${e.toString()}');
+    }
+  }
+
+  // Get current user type from database
+  static Future<String?> getCurrentUserType() async {
+    try {
+      final user = getCurrentUser();
+      if (user == null) return null;
+
+      // Check in doctors collection first
+      final doctorSnapshot =
+          await _database.child('doctors').child(user.uid).get();
+      if (doctorSnapshot.exists) {
+        final data = Map<String, dynamic>.from(doctorSnapshot.value as Map);
+        return data['userType'] ?? 'doctor';
+      }
+
+      // Check in patient_profiles collection
+      final patientSnapshot =
+          await _database.child('patient_profiles').child(user.uid).get();
+      if (patientSnapshot.exists) {
+        final data = Map<String, dynamic>.from(patientSnapshot.value as Map);
+        return data['userType'] ?? 'patient';
+      }
+
+      return null;
+    } catch (e) {
+      print('❌ Error getting user type: $e');
+      return null;
+    }
+  }
+
+  // Get current user profile data
+  static Future<Map<String, dynamic>?> getCurrentUserProfile() async {
+    try {
+      final user = getCurrentUser();
+      if (user == null) {
+        print('❌ No current user');
+        return null;
+      }
+
+      if (!user.emailVerified) {
+        print('❌ User email not verified');
+        return null;
+      }
+
+      print('🔍 Looking for user profile for UID: ${user.uid}');
+
+      // Check in users collection first (main profile data)
+      try {
+        final userSnapshot =
+            await _database.child('users').child(user.uid).get();
+        if (userSnapshot.exists) {
+          print('✅ Found profile in users collection');
+          return Map<String, dynamic>.from(userSnapshot.value as Map);
+        }
+      } catch (e) {
+        print('❌ Error accessing users collection: $e');
+      }
+
+      // Check in patient_profiles collection
+      try {
+        final patientSnapshot =
+            await _database.child('patient_profiles').child(user.uid).get();
+        if (patientSnapshot.exists) {
+          print('✅ Found profile in patient_profiles collection');
+          return Map<String, dynamic>.from(patientSnapshot.value as Map);
+        }
+      } catch (e) {
+        print('❌ Error accessing patient_profiles collection: $e');
+      }
+
+      // Check in doctor_profiles collection (corrected path)
+      try {
+        final doctorSnapshot =
+            await _database.child('doctor_profiles').child(user.uid).get();
+        if (doctorSnapshot.exists) {
+          print('✅ Found profile in doctor_profiles collection');
+          return Map<String, dynamic>.from(doctorSnapshot.value as Map);
+        }
+      } catch (e) {
+        print('❌ Error accessing doctor_profiles collection: $e');
+      }
+
+      print('❌ No profile found in any collection');
+      return null;
+    } catch (e) {
+      print('❌ Error getting user profile: $e');
+      return null;
+    }
+  }
+
+  // Check if user is logged in and verified
+  static Future<bool> isUserLoggedInAndVerified() async {
+    try {
+      final user = getCurrentUser();
+      if (user == null) return false;
+
+      // Check if user's email is verified
+      if (!user.emailVerified) {
+        print('❌ User email not verified');
+        return false;
+      }
+
+      // Check if user has a valid profile in the database
+      final userProfile = await getCurrentUserProfile();
+      if (userProfile == null) {
+        print('❌ User profile not found in database');
+        return false;
+      }
+
+      // Check if user has a valid user type
+      final userType = await getCurrentUserType();
+      if (userType == null || (userType != 'doctor' && userType != 'patient')) {
+        print('❌ Invalid or missing user type: $userType');
+        return false;
+      }
+
+      print('✅ User is properly logged in and verified');
+      return true;
+    } catch (e) {
+      print('❌ Error checking login status: $e');
+      return false;
+    }
+  }
+
+  // Clear invalid authentication state
+  static Future<void> clearInvalidAuthState() async {
+    try {
+      final user = getCurrentUser();
+      if (user != null) {
+        // Check if user has valid profile
+        final userProfile = await getCurrentUserProfile();
+        final userType = await getCurrentUserType();
+
+        if (userProfile == null ||
+            userType == null ||
+            (userType != 'doctor' && userType != 'patient')) {
+          print('🧹 Clearing invalid authentication state');
+          await signOut();
+        }
+      }
+    } catch (e) {
+      print('❌ Error clearing invalid auth state: $e');
+      // Sign out anyway to be safe
+      await signOut();
     }
   }
 }

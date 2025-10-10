@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:health_buddy/screens/common/auth/signup_screen.dart';
+import 'package:health_buddy/screens/doctor/doctor_dashboard.dart';
 
 class DoctorPatientsScreen extends StatefulWidget {
   const DoctorPatientsScreen({super.key});
@@ -63,79 +65,29 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
     }
   }
 
-  void _addNewPatient() {
-    final nameController = TextEditingController();
-    final genderController = TextEditingController();
-    final ageController = TextEditingController();
-    final contactController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Add New Patient'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Patient Name',
-                    hintText: 'Enter patient name',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: genderController,
-                  decoration: const InputDecoration(
-                    labelText: 'Gender',
-                    hintText: 'Enter gender',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: ageController,
-                  decoration: const InputDecoration(
-                    labelText: 'Age',
-                    hintText: 'Enter age',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: contactController,
-                  decoration: const InputDecoration(
-                    labelText: 'Contact',
-                    hintText: 'Enter contact number',
-                  ),
-                  keyboardType: TextInputType.phone,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // In a real implementation, you would save this to the database
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Patient added successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              },
-              child: const Text('Add Patient'),
-            ),
-          ],
-        );
-      },
+  void _registerNewPatient() async {
+    // Navigate to patient signup screen with return route to doctor dashboard
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PatientSignupScreen(
+          returnToDoctorDashboard: true,
+        ),
+      ),
     );
+    
+    // If patient was successfully registered, refresh the patient list
+    if (result == true) {
+      _fetchPatients();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Patient registered successfully!'),
+            backgroundColor: Color(0xFF4CAF50),
+          ),
+        );
+      }
+    }
   }
 
   void _viewPatientRecord(Map<String, dynamic> patient) {
@@ -162,7 +114,7 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Patients'),
-        backgroundColor: Theme.of(context).colorScheme.background,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         actions: [
           IconButton(
@@ -197,18 +149,21 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
             ),
             const SizedBox(height: 20),
             
-            // Add New Patient button
+            // Register New Patient button
             ElevatedButton.icon(
-              onPressed: _addNewPatient,
+              onPressed: _registerNewPatient,
               style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4CAF50), // Green theme
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
+                elevation: 3,
               ),
-              icon: const Icon(Icons.add),
+              icon: const Icon(Icons.person_add),
               label: const Text(
-                'Add New Patient',
+                'Register New Patient',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,

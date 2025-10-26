@@ -36,9 +36,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             Text(
               'My Profile',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             // User Info Card
@@ -56,7 +56,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        FirebaseAuth.instance.currentUser?.displayName ?? 'User',
+                        FirebaseAuth.instance.currentUser?.displayName ??
+                            'User',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       Text(
@@ -112,8 +113,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: Icon(Icons.person),
                           ),
                           const SizedBox(height: 4),
-                          Text(_familyMembers[index],
-                              style: const TextStyle(fontSize: 12)),
+                          Text(
+                            _familyMembers[index],
+                            style: const TextStyle(fontSize: 12),
+                          ),
                         ],
                       ),
                     );
@@ -127,13 +130,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               context,
               title: 'Medication Reminders',
               content: Column(
-                children: _medicationReminders.map((med) {
-                  return ListTile(
-                    leading: const Icon(Icons.medical_services),
-                    title: Text(med['name']!),
-                    trailing: Text(med['time']!),
-                  );
-                }).toList(),
+                children:
+                    _medicationReminders.map((med) {
+                      return ListTile(
+                        leading: const Icon(Icons.medical_services),
+                        title: Text(med['name']!),
+                        trailing: Text(med['time']!),
+                      );
+                    }).toList(),
               ),
               trailing: TextButton.icon(
                 onPressed: () {},
@@ -145,7 +149,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Logout Button
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: Colors.red),
+              ),
               onTap: _signOut,
             ),
           ],
@@ -154,8 +161,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context,
-      {required String title, required Widget content, Widget? trailing}) {
+  Widget _buildInfoCard(
+    BuildContext context, {
+    required String title,
+    required Widget content,
+    Widget? trailing,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -163,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1 * 255),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -178,9 +189,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               if (trailing != null) trailing,
             ],

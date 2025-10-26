@@ -16,8 +16,7 @@ class SignupScreen extends StatefulWidget {
 
 // Alias for better naming from doctor's perspective
 class PatientSignupScreen extends SignupScreen {
-  const PatientSignupScreen({super.key, bool returnToDoctorDashboard = false})
-    : super(returnToDoctorDashboard: returnToDoctorDashboard);
+  const PatientSignupScreen({super.key, super.returnToDoctorDashboard});
 }
 
 class _SignupScreenState extends State<SignupScreen>
@@ -55,7 +54,7 @@ class _SignupScreenState extends State<SignupScreen>
   DateTime? _selectedDate;
   String? _selectedGender;
   String? _selectedBloodGroup;
-  List<String> _selectedAllergies = [];
+  final List<String> _selectedAllergies = [];
 
   final List<String> _bloodGroups = [
     'A+',
@@ -212,7 +211,12 @@ class _SignupScreenState extends State<SignupScreen>
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => VerificationScreen(user: user),
+            builder:
+                (context) => VerificationScreen(
+                  user: user,
+                  // If this signup was initiated from doctor flow, return back with result
+                  popOnVerified: widget.returnToDoctorDashboard,
+                ),
           ),
         );
       }
@@ -637,10 +641,10 @@ class _SignupScreenState extends State<SignupScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.1 * 255),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF4CAF50).withOpacity(0.3),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.3 * 255),
                 ),
               ),
               child: Column(
@@ -905,7 +909,9 @@ class _SignupScreenState extends State<SignupScreen>
                             }
                           });
                         },
-                        selectedColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                        selectedColor: const Color(
+                          0xFF4CAF50,
+                        ).withValues(alpha: 0.2 * 255),
                         checkmarkColor: const Color(0xFF4CAF50),
                         backgroundColor: Colors.white,
                         side: BorderSide(

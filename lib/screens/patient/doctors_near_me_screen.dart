@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:health_buddy/utils/constants.dart';
 import 'package:health_buddy/services/ai_service.dart';
 import 'dart:convert';
 import 'package:health_buddy/screens/patient/doctor_details_screen.dart';

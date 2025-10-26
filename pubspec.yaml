@@ -36,14 +36,22 @@ dependencies:
   http: ^1.2.2
   # For persisting user preferences
   shared_preferences: ^2.3.2
+  # For camera functionality
+  camera: ^0.10.5+9
+  # For file path management
+  path_provider: ^2.0.11
+  path: ^1.8.2
+  # For getting device permissions
+  permission_handler: ^11.3.1
+  # For cross-platform file handling
+  cross_file: ^0.3.4+1
+  # For getting device information (Android API level, etc.) - temporarily disabled due to plugin issues
+  # device_info_plus: ^10.1.0
   
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  camera: ^0.10.5+9 
-  path_provider: ^2.0.11 
-  path: ^1.8.2
   flutter_launcher_icons: ^0.13.1
 
 flutter:
@@ -55,6 +63,7 @@ flutter:
   # Add assets for your app here.
   assets:
     - assets/images/app_logo.png
+    - assets/test_images/
 
 # Flutter Launcher Icons configuration
 flutter_launcher_icons:

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:health_buddy/screens/patient/main_app/home_screen.dart';
 import 'package:health_buddy/screens/patient/main_app/scanner_screen.dart';
-import 'package:health_buddy/screens/patient/main_app/profile_screen.dart';
 import 'package:health_buddy/screens/common/chat/chatbot_screen.dart';
-import 'package:health_buddy/screens/patient/doctors_near_me_screen.dart';
 import 'package:health_buddy/screens/patient/gov_schemes_screen.dart';
 import 'package:health_buddy/screens/patient/ai_doctors_screen.dart'; // Added AI Doctors screen
 import 'package:health_buddy/widgets/bottom_nav_bar.dart';

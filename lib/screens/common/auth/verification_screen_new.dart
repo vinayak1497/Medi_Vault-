@@ -289,12 +289,12 @@ class _VerificationScreenState extends State<VerificationScreen>
                                 decoration: BoxDecoration(
                                   color: const Color(
                                     0xFF4CAF50,
-                                  ).withOpacity(0.1),
+                                  ).withValues(alpha: 0.1 * 255),
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                     color: const Color(
                                       0xFF4CAF50,
-                                    ).withOpacity(0.3),
+                                    ).withValues(alpha: 0.3 * 255),
                                     width: 2,
                                   ),
                                 ),
@@ -342,10 +342,14 @@ class _VerificationScreenState extends State<VerificationScreen>
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withOpacity(0.1),
+                            color: const Color(
+                              0xFF4CAF50,
+                            ).withValues(alpha: 0.1 * 255),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: const Color(0xFF4CAF50).withOpacity(0.3),
+                              color: const Color(
+                                0xFF4CAF50,
+                              ).withValues(alpha: 0.3 * 255),
                             ),
                           ),
                           child: Text(

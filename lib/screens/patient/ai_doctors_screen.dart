@@ -272,7 +272,7 @@ class _AIDoctorsScreenState extends State<AIDoctorsScreen> {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).colorScheme.primary.withOpacity(0.1),
+                    ).colorScheme.primary.withValues(alpha: 0.1 * 255),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

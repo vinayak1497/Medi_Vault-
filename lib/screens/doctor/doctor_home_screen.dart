@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
-import 'package:image_picker/image_picker.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:health_buddy/screens/doctor/nmc_verification_screen.dart';
+import 'package:health_buddy/screens/doctor/minimal_image_to_text_screen.dart';
 import 'package:health_buddy/widgets/verification_badge.dart';
 
 class DoctorHomeScreen extends StatefulWidget {
@@ -19,8 +18,8 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
   bool _isListening = false;
   String _transcribedText = '';
   String _editedText = '';
-  bool _isProcessing = false;
-  String _processingMessage = '';
+  final bool _isProcessing = false;
+  final String _processingMessage = '';
 
   @override
   void initState() {
@@ -73,48 +72,12 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
     setState(() => _isListening = false);
   }
 
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera);
-
-    if (pickedFile != null) {
-      setState(() {
-        _isProcessing = true;
-        _processingMessage = 'Processing image...';
-      });
-
-      try {
-        // Process the image with ML Kit
-        final inputImage = InputImage.fromFilePath(pickedFile.path);
-        final textRecognizer = TextRecognizer(
-          script: TextRecognitionScript.latin,
-        );
-        final RecognizedText recognizedText = await textRecognizer.processImage(
-          inputImage,
-        );
-
-        String extractedText = '';
-        for (TextBlock block in recognizedText.blocks) {
-          for (TextLine line in block.lines) {
-            extractedText += '${line.text}\n';
-          }
-        }
-
-        setState(() {
-          _transcribedText = extractedText;
-          _editedText = extractedText;
-          _isProcessing = false;
-        });
-
-        // Show preview dialog
-        _showPreviewDialog();
-      } catch (e) {
-        setState(() {
-          _isProcessing = false;
-          _processingMessage = 'Error processing image: $e';
-        });
-      }
-    }
+  /// Navigate to minimal image-to-text screen
+  void _navigateToScanner() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const MinimalImageToTextScreen()),
+    );
   }
 
   void _showPreviewDialog() {
@@ -384,14 +347,14 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
 
             // Scan Prescription button
             OutlinedButton.icon(
-              onPressed: _isProcessing ? null : _pickImage,
+              onPressed: _isProcessing ? null : _navigateToScanner,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              icon: const Icon(Icons.camera_alt),
+              icon: const Icon(Icons.document_scanner),
               label: const Text(
                 'Scan Prescription',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

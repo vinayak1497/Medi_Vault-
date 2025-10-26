@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:health_buddy/screens/common/auth/splash_screen.dart';
-import 'package:health_buddy/screens/doctor/doctor_dashboard.dart';
 import 'package:health_buddy/screens/common/auth/verification_screen.dart';
 import 'package:health_buddy/services/auth_service.dart';
 
@@ -17,8 +15,7 @@ class SignupScreen extends StatefulWidget {
 
 // Alias for better naming from doctor's perspective
 class PatientSignupScreen extends SignupScreen {
-  const PatientSignupScreen({super.key, bool returnToDoctorDashboard = false})
-    : super(returnToDoctorDashboard: returnToDoctorDashboard);
+  const PatientSignupScreen({super.key, super.returnToDoctorDashboard});
 }
 
 class _SignupScreenState extends State<SignupScreen>
@@ -56,7 +53,7 @@ class _SignupScreenState extends State<SignupScreen>
   DateTime? _selectedDate;
   String? _selectedGender;
   String? _selectedBloodGroup;
-  List<String> _selectedAllergies = [];
+  final List<String> _selectedAllergies = [];
 
   final List<String> _bloodGroups = [
     'A+',
@@ -465,10 +462,12 @@ class _SignupScreenState extends State<SignupScreen>
               label: 'Full Name',
               icon: Icons.person_outline,
               validator: (value) {
-                if (value?.isEmpty ?? true)
+                if (value?.isEmpty ?? true) {
                   return 'Please enter your full name';
-                if (value!.length < 2)
+                }
+                if (value!.length < 2) {
                   return 'Name must be at least 2 characters';
+                }
                 return null;
               },
             ),
@@ -510,8 +509,9 @@ class _SignupScreenState extends State<SignupScreen>
               ),
               validator: (value) {
                 if (value?.isEmpty ?? true) return 'Please enter a password';
-                if (value!.length < 6)
+                if (value!.length < 6) {
                   return 'Password must be at least 6 characters';
+                }
                 return null;
               },
             ),
@@ -536,10 +536,12 @@ class _SignupScreenState extends State<SignupScreen>
                     ),
               ),
               validator: (value) {
-                if (value?.isEmpty ?? true)
+                if (value?.isEmpty ?? true) {
                   return 'Please confirm your password';
-                if (value != _passwordController.text)
+                }
+                if (value != _passwordController.text) {
                   return 'Passwords do not match';
+                }
                 return null;
               },
             ),
@@ -641,8 +643,9 @@ class _SignupScreenState extends State<SignupScreen>
               label: 'Emergency Contact Name',
               icon: Icons.person_outline,
               validator: (value) {
-                if (value?.isEmpty ?? true)
+                if (value?.isEmpty ?? true) {
                   return 'Please enter emergency contact name';
+                }
                 return null;
               },
             ),
@@ -655,10 +658,12 @@ class _SignupScreenState extends State<SignupScreen>
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
               validator: (value) {
-                if (value?.isEmpty ?? true)
+                if (value?.isEmpty ?? true) {
                   return 'Please enter emergency contact phone';
-                if (value!.length < 10)
+                }
+                if (value!.length < 10) {
                   return 'Please enter a valid phone number';
+                }
                 return null;
               },
             ),
@@ -668,10 +673,10 @@ class _SignupScreenState extends State<SignupScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.1 * 255),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF4CAF50).withOpacity(0.3),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.3 * 255),
                 ),
               ),
               child: Column(
@@ -934,7 +939,9 @@ class _SignupScreenState extends State<SignupScreen>
                             }
                           });
                         },
-                        selectedColor: const Color(0xFF4CAF50).withOpacity(0.2),
+                        selectedColor: const Color(
+                          0xFF4CAF50,
+                        ).withValues(alpha: 0.2 * 255),
                         checkmarkColor: const Color(0xFF4CAF50),
                         backgroundColor: Colors.white,
                         side: BorderSide(

@@ -2,23 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:health_buddy/screens/common/auth/splash_screen.dart';
+import 'package:health_buddy/services/auth_service.dart';
 import 'dart:async';
 
 class VerificationScreen extends StatefulWidget {
   final User user;
-  const VerificationScreen({super.key, required this.user});
+  // When true, pop back to previous screen with the verified user's profile map as result
+  final bool popOnVerified;
+  const VerificationScreen({
+    super.key,
+    required this.user,
+    this.popOnVerified = false,
+  });
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
 }
 
-class _VerificationScreenState extends State<VerificationScreen> 
+class _VerificationScreenState extends State<VerificationScreen>
     with TickerProviderStateMixin {
   late AnimationController _pulseController;
   late AnimationController _fadeController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _fadeAnimation;
-  
+
   Timer? _checkTimer;
   bool _isChecking = false;
   bool _canResend = true;
@@ -27,12 +34,12 @@ class _VerificationScreenState extends State<VerificationScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _pulseController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -42,12 +49,13 @@ class _VerificationScreenState extends State<VerificationScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
     _fadeController.forward();
-    
+
     // Start periodic check for email verification
     _startPeriodicCheck();
   }
@@ -72,7 +80,7 @@ class _VerificationScreenState extends State<VerificationScreen>
       if (widget.user.emailVerified && mounted) {
         _checkTimer?.cancel();
         HapticFeedback.mediumImpact();
-        
+
         // Add a success feedback before navigation
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -85,19 +93,29 @@ class _VerificationScreenState extends State<VerificationScreen>
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
-        
+
         // Navigate after a brief delay to show the success message
         await Future.delayed(const Duration(seconds: 1));
-        
+
         if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const SplashScreen()),
-          );
+          if (widget.popOnVerified) {
+            // Fetch the latest user profile to return upwards
+            final profile = await AuthService.getCurrentUserProfile();
+            if (mounted) {
+              Navigator.pop(context, profile);
+            }
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SplashScreen()),
+            );
+          }
         }
       }
     } catch (e) {
@@ -118,11 +136,17 @@ class _VerificationScreenState extends State<VerificationScreen>
         if (mounted) {
           _checkTimer?.cancel();
           HapticFeedback.mediumImpact();
-          
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const SplashScreen()),
-          );
+          if (widget.popOnVerified) {
+            final profile = await AuthService.getCurrentUserProfile();
+            if (mounted) {
+              Navigator.pop(context, profile);
+            }
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SplashScreen()),
+            );
+          }
         }
       } else {
         if (mounted) {
@@ -133,12 +157,16 @@ class _VerificationScreenState extends State<VerificationScreen>
                 children: [
                   const Icon(Icons.info_outline, color: Colors.white),
                   const SizedBox(width: 12),
-                  const Text('Email not yet verified. Please check your inbox.'),
+                  const Text(
+                    'Email not yet verified. Please check your inbox.',
+                  ),
                 ],
               ),
               backgroundColor: Colors.orange,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           );
         }
@@ -157,7 +185,9 @@ class _VerificationScreenState extends State<VerificationScreen>
             ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -182,7 +212,7 @@ class _VerificationScreenState extends State<VerificationScreen>
 
     try {
       await widget.user.sendEmailVerification();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -195,7 +225,9 @@ class _VerificationScreenState extends State<VerificationScreen>
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -218,7 +250,7 @@ class _VerificationScreenState extends State<VerificationScreen>
         _canResend = true;
         _resendCooldown = 0;
       });
-      
+
       if (mounted) {
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
@@ -232,7 +264,9 @@ class _VerificationScreenState extends State<VerificationScreen>
             ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -249,7 +283,7 @@ class _VerificationScreenState extends State<VerificationScreen>
           // Auto-navigation will be handled by the periodic check
           return const SplashScreen();
         }
-        
+
         return Scaffold(
           backgroundColor: Colors.white,
           body: SafeArea(
@@ -263,7 +297,7 @@ class _VerificationScreenState extends State<VerificationScreen>
                     child: Column(
                       children: [
                         const SizedBox(height: 60),
-                        
+
                         // Animated Email Icon
                         AnimatedBuilder(
                           animation: _pulseAnimation,
@@ -274,10 +308,14 @@ class _VerificationScreenState extends State<VerificationScreen>
                                 width: 120,
                                 height: 120,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                  color: const Color(
+                                    0xFF4CAF50,
+                                  ).withValues(alpha: 0.1 * 255),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                    color: const Color(
+                                      0xFF4CAF50,
+                                    ).withValues(alpha: 0.3 * 255),
                                     width: 2,
                                   ),
                                 ),
@@ -290,9 +328,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                             );
                           },
                         ),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Title
                         const Text(
                           'Verify Your Email',
@@ -303,9 +341,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
+
                         const SizedBox(height: 16),
-                        
+
                         // Subtitle
                         const Text(
                           'We\'ve sent a verification link to',
@@ -315,17 +353,24 @@ class _VerificationScreenState extends State<VerificationScreen>
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
+
                         const SizedBox(height: 8),
-                        
+
                         // Email address
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50).withOpacity(0.1),
+                            color: const Color(
+                              0xFF4CAF50,
+                            ).withValues(alpha: 0.1 * 255),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: const Color(0xFF4CAF50).withOpacity(0.3),
+                              color: const Color(
+                                0xFF4CAF50,
+                              ).withValues(alpha: 0.3 * 255),
                             ),
                           ),
                           child: Text(
@@ -338,9 +383,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Instructions
                         const Text(
                           'Please check your email and click the verification link to activate your account.',
@@ -351,9 +396,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        
+
                         const SizedBox(height: 40),
-                        
+
                         // Manual Check Button
                         SizedBox(
                           width: double.infinity,
@@ -367,28 +412,29 @@ class _VerificationScreenState extends State<VerificationScreen>
                               ),
                               elevation: 0,
                             ),
-                            child: _isChecking
-                                ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
+                            child:
+                                _isChecking
+                                    ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'I\'ve Verified My Email',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  )
-                                : const Text(
-                                    'I\'ve Verified My Email',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 24),
-                        
+
                         // Resend Email Section
                         Container(
                           padding: const EdgeInsets.all(20),
@@ -430,28 +476,35 @@ class _VerificationScreenState extends State<VerificationScreen>
                               SizedBox(
                                 width: double.infinity,
                                 child: TextButton(
-                                  onPressed: _canResend ? _resendVerificationEmail : null,
+                                  onPressed:
+                                      _canResend
+                                          ? _resendVerificationEmail
+                                          : null,
                                   style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8),
                                       side: BorderSide(
-                                        color: _canResend 
-                                            ? const Color(0xFF4CAF50) 
-                                            : const Color(0xFFE5E7EB),
+                                        color:
+                                            _canResend
+                                                ? const Color(0xFF4CAF50)
+                                                : const Color(0xFFE5E7EB),
                                       ),
                                     ),
                                   ),
                                   child: Text(
-                                    _canResend 
+                                    _canResend
                                         ? 'Resend Verification Email'
                                         : 'Resend in ${_resendCooldown}s',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: _canResend 
-                                          ? const Color(0xFF4CAF50)
-                                          : const Color(0xFF9CA3AF),
+                                      color:
+                                          _canResend
+                                              ? const Color(0xFF4CAF50)
+                                              : const Color(0xFF9CA3AF),
                                     ),
                                   ),
                                 ),
@@ -459,9 +512,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                             ],
                           ),
                         ),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // Auto-check indicator
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -487,9 +540,9 @@ class _VerificationScreenState extends State<VerificationScreen>
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 40),
-                        
+
                         // Back to Login
                         TextButton(
                           onPressed: () => Navigator.pop(context),

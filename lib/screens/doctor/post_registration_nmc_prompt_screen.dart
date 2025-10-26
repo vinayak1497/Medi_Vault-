@@ -23,7 +23,11 @@ class PostRegistrationNMCPromptScreen extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [paleGreen.withOpacity(0.3), Colors.white, Colors.white],
+              colors: [
+                paleGreen.withValues(alpha: 0.3 * 255),
+                Colors.white,
+                Colors.white,
+              ],
             ),
           ),
           child: Padding(
@@ -40,7 +44,7 @@ class PostRegistrationNMCPromptScreen extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: primaryGreen.withOpacity(0.3),
+                        color: primaryGreen.withValues(alpha: 0.3 * 255),
                         blurRadius: 30,
                         offset: const Offset(0, 15),
                       ),
@@ -85,7 +89,7 @@ class PostRegistrationNMCPromptScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1 * 255),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -96,7 +100,7 @@ class PostRegistrationNMCPromptScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: lightGreen.withOpacity(0.1),
+                          color: lightGreen.withValues(alpha: 0.1 * 255),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -165,7 +169,7 @@ class PostRegistrationNMCPromptScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: primaryGreen.withOpacity(0.3),
+                            color: primaryGreen.withValues(alpha: 0.3 * 255),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -265,7 +269,7 @@ class PostRegistrationNMCPromptScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1 * 255),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Icon(icon, size: 16, color: color),

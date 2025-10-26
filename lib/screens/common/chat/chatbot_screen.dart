@@ -155,7 +155,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1 * 255),
                   spreadRadius: 1,
                   blurRadius: 5,
                 ),
@@ -208,7 +208,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           color:
               isUser
                   ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                  : Theme.of(
+                    context,
+                  ).colorScheme.secondary.withValues(alpha: 0.1 * 255),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(

@@ -159,7 +159,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1 * 255),
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 2),
@@ -176,7 +176,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.1 * 255),
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Icon(
@@ -205,7 +205,9 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4CAF50).withOpacity(0.1),
+                        color: const Color(
+                          0xFF4CAF50,
+                        ).withValues(alpha: 0.1 * 255),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
@@ -312,7 +314,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: Colors.grey.withValues(alpha: 0.1 * 255),
                   spreadRadius: 1,
                   blurRadius: 4,
                   offset: const Offset(0, 2),
@@ -328,7 +330,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
+                        color: Colors.blue.withValues(alpha: 0.1 * 255),
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: Icon(

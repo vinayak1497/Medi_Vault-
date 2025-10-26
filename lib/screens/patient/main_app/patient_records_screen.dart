@@ -202,7 +202,7 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen>
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withValues(alpha: 0.1 * 255),
                     spreadRadius: 1,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
@@ -329,7 +329,7 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1 * 255),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -355,7 +355,7 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.1 * 255),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -404,7 +404,9 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen>
                   icon: const Icon(Icons.notifications_outlined, size: 16),
                   label: const Text('Set Reminder'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50).withOpacity(0.1),
+                    backgroundColor: const Color(
+                      0xFF4CAF50,
+                    ).withValues(alpha: 0.1 * 255),
                     foregroundColor: const Color(0xFF4CAF50),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -463,7 +465,7 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen>
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1 * 255),
             spreadRadius: 1,
             blurRadius: 4,
             offset: const Offset(0, 2),
@@ -479,7 +481,7 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.1 * 255),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: const Color(0xFF4CAF50), size: 20),

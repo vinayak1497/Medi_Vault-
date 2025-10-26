@@ -192,7 +192,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  paleGreen.withOpacity(0.3),
+                  paleGreen.withValues(alpha: 0.3 * 255),
                   Colors.white,
                   Colors.white,
                 ],
@@ -219,7 +219,9 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: primaryGreen.withOpacity(0.3),
+                                  color: primaryGreen.withValues(
+                                    alpha: 0.3 * 255,
+                                  ),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -338,7 +340,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                         color: Colors.grey[50],
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: primaryGreen.withOpacity(0.3),
+                          color: primaryGreen.withValues(alpha: 0.3 * 255),
                         ),
                       ),
                       child: DropdownButtonFormField<String>(
@@ -347,7 +349,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                           labelText: 'State of Registration *',
                           prefixIcon: Icon(
                             Icons.location_on,
-                            color: primaryGreen.withOpacity(0.7),
+                            color: primaryGreen.withValues(alpha: 0.7 * 255),
                           ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
@@ -355,7 +357,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                             vertical: 16,
                           ),
                           labelStyle: TextStyle(
-                            color: primaryGreen.withOpacity(0.8),
+                            color: primaryGreen.withValues(alpha: 0.8 * 255),
                           ),
                         ),
                         dropdownColor: Colors.white,
@@ -453,7 +455,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: primaryGreen.withOpacity(0.3),
+                            color: primaryGreen.withValues(alpha: 0.3 * 255),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -544,7 +546,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1 * 255),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -601,7 +603,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1 * 255),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -663,7 +665,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.grey.withValues(alpha: 0.1 * 255),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -729,7 +731,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
+                  color: Colors.grey.withValues(alpha: 0.2 * 255),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -750,7 +752,7 @@ class _DoctorSignupScreenState extends State<DoctorSignupScreen> {
                   ),
                   onTap: () => _selectSpecialization(specialization),
                   dense: true,
-                  hoverColor: paleGreen.withOpacity(0.5),
+                  hoverColor: paleGreen.withValues(alpha: 0.5 * 255),
                 );
               },
             ),

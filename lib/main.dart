@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           seedColor: const Color(0xFF5DADE2),
           primary: const Color(0xFF5DADE2),
           secondary: const Color(0xFF4CAF50),
-          background: const Color(0xFFF5F5F5),
+          surface: const Color(0xFFF5F5F5),
         ),
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),
         fontFamily: 'Poppins',

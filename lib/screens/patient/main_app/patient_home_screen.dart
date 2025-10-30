@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:health_buddy/screens/common/chat/chatbot_screen.dart';
-import 'package:health_buddy/screens/patient/doctors_near_me_screen.dart';
+import 'package:health_buddy/screens/patient/find_doctors_screen.dart';
 import 'package:health_buddy/screens/patient/gov_schemes_screen.dart';
 import 'package:health_buddy/services/auth_service.dart';
 import 'package:health_buddy/services/database_service.dart';
+import 'package:health_buddy/services/appointment_service.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -17,6 +18,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   List<Map<String, dynamic>> _familyMembers = [];
   String? _selectedMemberName;
   bool _isLoading = true;
+  List<Map<String, dynamic>> _upcomingAppointments = [];
+  bool _appointmentsLoading = false;
 
   @override
   void initState() {
@@ -37,18 +40,48 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
         // Load family members
         await _loadFamilyMembers();
+
+        // Load upcoming appointments
+        await _loadUpcomingAppointments(profile['uid']);
       }
     } catch (e) {
-      print('Error loading patient data: $e');
+      debugPrint('Error loading patient data: $e');
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
+  // Safely return the first uppercase letter of a name, with a fallback
+  String _initial(String? name, {String fallback = 'M'}) {
+    if (name == null) return fallback;
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return fallback;
+    return trimmed.characters.first.toUpperCase();
+  }
+
+  // Responsive helpers
+  double _spacing(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    final s = w * 0.04; // 4% of width
+    return s.clamp(8.0, 24.0);
+  }
+
+  EdgeInsets _pagePadding(BuildContext context) {
+    final s = _spacing(context);
+    return EdgeInsets.symmetric(horizontal: s, vertical: s);
+  }
+
+  int _gridCount(BuildContext context) {
+    final w = MediaQuery.of(context).size.width;
+    if (w >= 900) return 4; // tablets landscape / large
+    if (w >= 600) return 3; // tablets portrait / foldables
+    return 2; // phones
+  }
+
   Future<void> _loadFamilyMembers() async {
     try {
       if (!DatabaseService.isAuthenticated) {
-        print('User not authenticated, skipping family members load');
+        debugPrint('User not authenticated, skipping family members load');
         setState(() {
           _familyMembers = [
             {'name': 'You', 'relationship': 'Self', 'id': 'self'},
@@ -60,24 +93,40 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
       final familyMembers = await DatabaseService.getFamilyMembers();
 
-      // Add the current user as primary member
+      // Normalize, filter out null/empty names, and dedupe by name
+      final seen = <String>{};
+      final cleaned = <Map<String, dynamic>>[];
+      for (final m in familyMembers) {
+        final name = (m['name'] ?? '').toString().trim();
+        if (name.isEmpty) continue; // drop the 'null' / empty entries
+        if (seen.add(name)) {
+          cleaned.add({...m, 'name': name});
+        }
+      }
+
+      // Add the current user as primary member at the top
       final user = DatabaseService.currentUser;
-      final members = [
-        {
-          'name': user?.displayName ?? 'You',
-          'relationship': 'Self',
-          'id': user?.uid ?? 'self',
-          'isPrimary': true,
-        },
-        ...familyMembers,
-      ];
+      final primaryName = (user?.displayName ?? 'You').toString().trim();
+      final primary = {
+        'name': primaryName.isEmpty ? 'You' : primaryName,
+        'relationship': 'Self',
+        'id': user?.uid ?? 'self',
+        'isPrimary': true,
+      };
+
+      final members = [primary, ...cleaned];
 
       setState(() {
         _familyMembers = members;
-        _selectedMemberName = members.first['name'];
+        // Keep selection if still valid; otherwise fallback to primary
+        final names = members.map((e) => (e['name'] ?? '').toString()).toSet();
+        if (_selectedMemberName == null ||
+            !names.contains(_selectedMemberName)) {
+          _selectedMemberName = primary['name'] as String;
+        }
       });
     } catch (e) {
-      print('Error loading family members: $e');
+      debugPrint('Error loading family members: $e');
       // Set default data on error
       setState(() {
         _familyMembers = [
@@ -88,8 +137,82 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     }
   }
 
+  /// Load upcoming appointments for the patient
+  Future<void> _loadUpcomingAppointments(String? patientId) async {
+    if (patientId == null) return;
+
+    try {
+      setState(() => _appointmentsLoading = true);
+
+      final appointments = await AppointmentService.getPatientAppointments(
+        patientId,
+      );
+
+      // Filter only upcoming appointments (pending or accepted status)
+      final upcoming =
+          appointments.where((apt) {
+            final status = apt['status'] ?? '';
+            return status == 'pending' || status == 'accepted';
+          }).toList();
+
+      // Sort by date (upcoming first)
+      upcoming.sort((a, b) {
+        try {
+          final dateA = DateTime.parse(a['appointmentDate'] ?? '');
+          final dateB = DateTime.parse(b['appointmentDate'] ?? '');
+          return dateA.compareTo(dateB);
+        } catch (_) {
+          return 0;
+        }
+      });
+
+      setState(() {
+        _upcomingAppointments = upcoming;
+        _appointmentsLoading = false;
+      });
+
+      debugPrint('✅ Loaded ${upcoming.length} upcoming appointments');
+    } catch (e) {
+      debugPrint('❌ Error loading appointments: $e');
+      setState(() => _appointmentsLoading = false);
+    }
+  }
+
+  /// Get color based on appointment status
+  Color _getAppointmentStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange; // Yellow for pending
+      case 'accepted':
+        return Colors.green; // Green for accepted
+      case 'rejected':
+        return Colors.red; // Red for rejected
+      case 'cancelled':
+        return Colors.grey; // Grey for cancelled
+      default:
+        return Colors.grey;
+    }
+  }
+
+  /// Get status text
+  String _getAppointmentStatusText(String status) {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'accepted':
+        return 'Confirmed';
+      case 'rejected':
+        return 'Rejected';
+      case 'cancelled':
+        return 'Cancelled';
+      default:
+        return 'Unknown';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final s = _spacing(context);
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -106,20 +229,23 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               children: [
                 // Header with Profile Switcher
                 _buildHeader(),
+                SizedBox(height: s),
 
                 // Quick Actions Grid
                 _buildQuickActions(),
+                SizedBox(height: s),
 
                 // Upcoming Appointments
                 _buildUpcomingAppointments(),
+                SizedBox(height: s),
 
                 // AI Assistant Card
                 _buildAIAssistantCard(),
+                SizedBox(height: s),
 
                 // Health Insights
                 _buildHealthInsights(),
-
-                const SizedBox(height: 100), // Bottom padding for navigation
+                SizedBox(height: s * 4), // Bottom padding for navigation
               ],
             ),
           ),
@@ -129,8 +255,9 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 
   Widget _buildHeader() {
+    final s = _spacing(context);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(s),
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,15 +269,12 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               children: [
                 // Profile Avatar
                 CircleAvatar(
-                  radius: 20,
+                  radius: 20 + (s - 8) * 0.25, // slightly scale with spacing
                   backgroundColor: const Color(
                     0xFF4CAF50,
                   ).withValues(alpha: 0.1 * 255),
                   child: Text(
-                    (_selectedMemberName != null &&
-                            _selectedMemberName!.isNotEmpty)
-                        ? _selectedMemberName![0].toUpperCase()
-                        : 'M',
+                    _initial(_selectedMemberName, fallback: 'M'),
                     style: const TextStyle(
                       color: Color(0xFF4CAF50),
                       fontWeight: FontWeight.bold,
@@ -158,7 +282,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: s * 0.6),
                 // Name with dropdown arrow
                 Expanded(
                   child: Column(
@@ -174,7 +298,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                               color: Color(0xFF1A1A1A),
                             ),
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: s * 0.2),
                           const Icon(
                             Icons.keyboard_arrow_down,
                             color: Color(0xFF666666),
@@ -206,7 +330,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: s),
 
           // Welcome Message
           Text(
@@ -217,7 +341,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               color: Color(0xFF1A1A1A),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: s * 0.25),
           Text(
             'How are you feeling today?',
             style: TextStyle(fontSize: 16, color: Colors.grey[600]),
@@ -228,8 +352,54 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   }
 
   Widget _buildQuickActions() {
-    return Container(
-      margin: const EdgeInsets.all(20),
+    final s = _spacing(context);
+    final actions = [
+      {
+        'icon': Icons.chat_bubble_outline,
+        'title': 'AI Health Chat',
+        'subtitle': 'Ask questions',
+        'color': const Color(0xFF4CAF50),
+        'onTap':
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+            ),
+      },
+      {
+        'icon': Icons.mic_outlined,
+        'title': 'Voice Chat',
+        'subtitle': 'Quick voice note',
+        'color': const Color(0xFF2196F3),
+        'onTap': () {},
+      },
+      {
+        'icon': Icons.local_hospital_outlined,
+        'title': 'Find Doctor',
+        'subtitle': 'Nearby doctors',
+        'color': const Color(0xFFFF9800),
+        'onTap':
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FindDoctorsScreen(),
+              ),
+            ),
+      },
+      {
+        'icon': Icons.account_balance_outlined,
+        'title': 'Gov Schemes',
+        'subtitle': 'Health benefits',
+        'color': const Color(0xFF9C27B0),
+        'onTap':
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const GovSchemesScreen()),
+            ),
+      },
+    ];
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(s, s, s, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -241,74 +411,35 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               color: Color(0xFF1A1A1A),
             ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.chat_bubble_outline,
-                  title: 'AI Health Chat',
-                  subtitle: 'Ask questions',
-                  color: const Color(0xFF4CAF50),
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ChatbotScreen(),
-                        ),
-                      ),
+          SizedBox(height: s * 0.8),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final count = _gridCount(context);
+              return GridView.builder(
+                itemCount: actions.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: count,
+                  crossAxisSpacing: s * 0.6,
+                  mainAxisSpacing: s * 0.6,
+                  // Make tiles taller to prevent any overflow on compact devices
+                  childAspectRatio: 0.95,
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.mic_outlined,
-                  title: 'Voice Chat',
-                  subtitle: 'Quick voice note',
-                  color: const Color(0xFF2196F3),
-                  onTap: () {
-                    // TODO: Implement voice chat
-                  },
-                ),
-              ),
-            ],
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  final a = actions[index];
+                  return _buildActionCard(
+                    icon: a['icon'] as IconData,
+                    title: a['title'] as String,
+                    subtitle: a['subtitle'] as String,
+                    color: a['color'] as Color,
+                    onTap: a['onTap'] as VoidCallback,
+                  );
+                },
+              );
+            },
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.local_hospital_outlined,
-                  title: 'Find Doctor',
-                  subtitle: 'Nearby doctors',
-                  color: const Color(0xFFFF9800),
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const DoctorsNearMeScreen(),
-                        ),
-                      ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionCard(
-                  icon: Icons.account_balance_outlined,
-                  title: 'Gov Schemes',
-                  subtitle: 'Health benefits',
-                  color: const Color(0xFF9C27B0),
-                  onTap:
-                      () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const GovSchemesScreen(),
-                        ),
-                      ),
-                ),
-              ),
-            ],
-          ),
+          SizedBox(height: s),
         ],
       ),
     );
@@ -324,7 +455,65 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
+        constraints: const BoxConstraints(minHeight: 112),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withValues(alpha: 0.1 * 255),
+              spreadRadius: 1,
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1 * 255),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingAppointments() {
+    final s = _spacing(context);
+
+    // Show loading state
+    if (_appointmentsLoading) {
+      return Container(
+        margin: EdgeInsets.fromLTRB(s, 0, s, 0),
+        padding: EdgeInsets.all(s),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -340,39 +529,30 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1 * 255),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
+            const Text(
+              'Upcoming Appointments',
+              style: TextStyle(
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF1A1A1A),
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            SizedBox(height: s),
+            const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
-  Widget _buildUpcomingAppointments() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.fromLTRB(s, 0, s, 0),
+      padding: EdgeInsets.all(s),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -407,51 +587,186 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          // No appointments placeholder
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FA),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.grey.withValues(alpha: 0.2 * 255),
-                style: BorderStyle.solid,
+          SizedBox(height: s * 0.8),
+
+          // Show appointments if available
+          if (_upcomingAppointments.isEmpty)
+            Container(
+              padding: EdgeInsets.all(s),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey.withValues(alpha: 0.2 * 255),
+                  style: BorderStyle.solid,
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.calendar_today_outlined,
-                  size: 48,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'No upcoming appointments',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[600],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 40 + (s - 8) * 0.5,
+                    color: Colors.grey[400],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Book your next checkup',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                ),
-              ],
+                  SizedBox(height: s * 0.6),
+                  Text(
+                    'No upcoming appointments',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: s * 0.25),
+                  Text(
+                    'Book your next checkup',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
+            )
+          else
+            ListView.separated(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: _upcomingAppointments.length,
+              separatorBuilder: (_, __) => SizedBox(height: s * 0.6),
+              itemBuilder: (context, index) {
+                final appointment = _upcomingAppointments[index];
+                final status = appointment['status'] ?? 'pending';
+                final statusColor = _getAppointmentStatusColor(status);
+                final statusText = _getAppointmentStatusText(status);
+                final doctorName = appointment['doctorName'] ?? 'Dr. Unknown';
+                final appointmentDate = appointment['appointmentDate'] ?? '';
+                final appointmentTime = appointment['appointmentTime'] ?? '';
+                final reason = appointment['reason'] ?? '';
+
+                // Parse date
+                DateTime? parsedDate;
+                try {
+                  parsedDate = DateTime.parse(appointmentDate);
+                } catch (_) {
+                  parsedDate = null;
+                }
+
+                final dateString =
+                    parsedDate != null
+                        ? '${parsedDate.day} ${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][parsedDate.month - 1]} ${parsedDate.year}'
+                        : 'Unknown date';
+
+                return Container(
+                  padding: EdgeInsets.all(s * 0.8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: 0.15 * 255),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              doctorName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(width: s * 0.4),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: s * 0.6,
+                              vertical: s * 0.3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.15 * 255),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: statusColor.withValues(alpha: 0.3 * 255),
+                              ),
+                            ),
+                            child: Text(
+                              statusText,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: statusColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: s * 0.5),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            size: 16,
+                            color: Colors.grey[500],
+                          ),
+                          SizedBox(width: s * 0.4),
+                          Text(
+                            dateString,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          if (appointmentTime.isNotEmpty) ...[
+                            SizedBox(width: s * 0.8),
+                            Icon(
+                              Icons.access_time,
+                              size: 16,
+                              color: Colors.grey[500],
+                            ),
+                            SizedBox(width: s * 0.4),
+                            Text(
+                              appointmentTime,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (reason.isNotEmpty) ...[
+                        SizedBox(height: s * 0.5),
+                        Text(
+                          'Reason: $reason',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
             ),
-          ),
         ],
       ),
     );
   }
 
   Widget _buildAIAssistantCard() {
+    final s = _spacing(context);
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.fromLTRB(s, 0, s, 0),
+      padding: EdgeInsets.all(s),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
@@ -474,8 +789,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           Row(
             children: [
               Container(
-                width: 50,
-                height: 50,
+                width: 44 + (s - 8) * 0.5,
+                height: 44 + (s - 8) * 0.5,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2 * 255),
                   borderRadius: BorderRadius.circular(25),
@@ -486,7 +801,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                   size: 28,
                 ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: s * 0.8),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,7 +824,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: s * 0.8),
           ElevatedButton(
             onPressed:
                 () => Navigator.push(
@@ -652,7 +967,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       0xFF4CAF50,
                     ).withValues(alpha: 0.1 * 255),
                     child: Text(
-                      (_patientData?['fullName'] ?? 'M')[0].toUpperCase(),
+                      _initial(_patientData?['fullName'], fallback: 'M'),
                       style: const TextStyle(
                         color: Color(0xFF4CAF50),
                         fontWeight: FontWeight.bold,
@@ -675,21 +990,26 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                     Navigator.pop(context);
                   },
                 ),
-                // Family members
-                ..._familyMembers.map(
-                  (member) => ListTile(
+                // Family members (already cleaned)
+                ..._familyMembers.skip(1).map((member) {
+                  final age = member['age'];
+                  final ageText =
+                      (age != null && age.toString().trim().isNotEmpty)
+                          ? Text('Age: ${age.toString().trim()}')
+                          : null;
+                  return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.blue.withValues(alpha: 0.1 * 255),
                       child: Text(
-                        (member['name'] ?? 'F')[0].toUpperCase(),
+                        _initial(member['name'] as String?, fallback: 'F'),
                         style: const TextStyle(
                           color: Colors.blue,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                    title: Text(member['name'] ?? 'Family Member'),
-                    subtitle: Text('Age: ${member['age'] ?? 'N/A'}'),
+                    title: Text((member['name'] ?? 'Family Member') as String),
+                    subtitle: ageText,
                     trailing:
                         _selectedMemberName == member['name']
                             ? const Icon(
@@ -703,8 +1023,8 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                       });
                       Navigator.pop(context);
                     },
-                  ),
-                ),
+                  );
+                }),
                 const SizedBox(height: 20),
               ],
             ),

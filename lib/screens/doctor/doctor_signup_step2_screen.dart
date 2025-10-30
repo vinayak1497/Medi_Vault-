@@ -69,7 +69,7 @@ class _DoctorSignupStep2ScreenState extends State<DoctorSignupStep2Screen> {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
-      print('🚀 Starting doctor registration for: $email');
+      debugPrint('🚀 Starting doctor registration for: $email');
 
       // Combine step 1 and step 2 data with comprehensive doctor profile
       final doctorData = {
@@ -108,7 +108,7 @@ class _DoctorSignupStep2ScreenState extends State<DoctorSignupStep2Screen> {
         'biography': '',
       };
 
-      print('📋 Doctor data to be saved: $doctorData');
+      debugPrint('📋 Doctor data to be saved: $doctorData');
 
       // Register user with email and password
       await AuthService.registerWithEmailAndPassword(
@@ -118,8 +118,8 @@ class _DoctorSignupStep2ScreenState extends State<DoctorSignupStep2Screen> {
         userData: doctorData,
       );
 
-      print('✅ Doctor registration successful for: $email');
-      print(
+      debugPrint('✅ Doctor registration successful for: $email');
+      debugPrint(
         '💾 All doctor data saved to Firebase Realtime Database under "doctors" node',
       );
 
@@ -147,7 +147,7 @@ class _DoctorSignupStep2ScreenState extends State<DoctorSignupStep2Screen> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      print('❌ Firebase Auth Error: ${e.code} - ${e.message}');
+      debugPrint('❌ Firebase Auth Error: ${e.code} - ${e.message}');
       setState(() {
         switch (e.code) {
           case 'weak-password':
@@ -166,7 +166,7 @@ class _DoctorSignupStep2ScreenState extends State<DoctorSignupStep2Screen> {
         }
       });
     } catch (e) {
-      print('❌ General Error: $e');
+      debugPrint('❌ General Error: $e');
       setState(() {
         _errorMessage =
             'Registration failed. Please check your internet connection and try again.';
@@ -294,11 +294,31 @@ class _DoctorSignupStep2ScreenState extends State<DoctorSignupStep2Screen> {
                     filled: true,
                     fillColor: paleGreen,
                   ),
+                  isExpanded:
+                      true, // prevent text overflow when prefix/suffix present
+                  selectedItemBuilder:
+                      (context) =>
+                          IndianStates.states
+                              .map(
+                                (s) => Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    s,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
                   items:
                       IndianStates.states.map((String state) {
                         return DropdownMenuItem<String>(
                           value: state,
-                          child: Text(state),
+                          child: Text(
+                            state,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }).toList(),
                   onChanged: (String? newValue) {

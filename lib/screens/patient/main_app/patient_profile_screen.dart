@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:health_buddy/services/auth_service.dart';
 import 'package:health_buddy/screens/common/auth/user_type_screen.dart';
 import 'package:health_buddy/utils/validators.dart';
+import '../../../main.dart';
 
 class PatientProfileScreen extends StatefulWidget {
   const PatientProfileScreen({super.key});
@@ -878,12 +879,24 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.all(20),
+                Padding(
+                  padding: const EdgeInsets.all(20),
                   child: Text(
                     'Settings',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                ),
+                // Language
+                ListTile(
+                  leading: const Icon(Icons.language_outlined),
+                  title: const Text('Language'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showLanguagePicker();
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.security_outlined),
@@ -935,6 +948,75 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
             ),
           ),
     );
+  }
+
+  void _showLanguagePicker() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      'Select Language',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.language),
+                    title: const Text('English'),
+                    onTap: () => Navigator.pop(context, 'en'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.language),
+                    title: const Text('Hindi'),
+                    onTap: () => Navigator.pop(context, 'hi'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.language),
+                    title: const Text('Marathi'),
+                    onTap: () => Navigator.pop(context, 'mr'),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          ),
+    );
+
+    if (selected != null) {
+      final locale = Locale(selected);
+      await MyApp.setLocale(locale);
+      if (!mounted) return;
+      String languageName = '';
+      if (selected == 'en') {
+        languageName = 'English';
+      } else if (selected == 'hi') {
+        languageName = 'Hindi';
+      } else if (selected == 'mr') {
+        languageName = 'Marathi';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Language: $languageName'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      setState(() {});
+    }
   }
 
   IconData _getGenderIcon(String? gender) {

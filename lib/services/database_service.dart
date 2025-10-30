@@ -22,15 +22,15 @@ class DatabaseService {
   static Future<DataSnapshot?> safeRead(String path) async {
     try {
       if (!isAuthenticated) {
-        print('❌ Authentication required to read from: $path');
+        debugPrint('❌ Authentication required to read from: $path');
         return null;
       }
 
       final snapshot = await _database.child(path).get();
-      print('✅ Successfully read from: $path');
+      debugPrint('✅ Successfully read from: $path');
       return snapshot;
     } catch (e) {
-      print('❌ Error reading from $path: $e');
+      debugPrint('❌ Error reading from $path: $e');
       return null;
     }
   }
@@ -39,15 +39,15 @@ class DatabaseService {
   static Future<bool> safeWrite(String path, dynamic data) async {
     try {
       if (!isAuthenticated) {
-        print('❌ Authentication required to write to: $path');
+        debugPrint('❌ Authentication required to write to: $path');
         return false;
       }
 
       await _database.child(path).set(data);
-      print('✅ Successfully wrote to: $path');
+      debugPrint('✅ Successfully wrote to: $path');
       return true;
     } catch (e) {
-      print('❌ Error writing to $path: $e');
+      debugPrint('❌ Error writing to $path: $e');
       return false;
     }
   }
@@ -63,7 +63,7 @@ class DatabaseService {
         return Map<String, dynamic>.from(snapshot.value as Map);
       }
     } catch (e) {
-      print('Error getting user profile: $e');
+      debugPrint('Error getting user profile: $e');
     }
     return null;
   }
@@ -79,7 +79,7 @@ class DatabaseService {
         return Map<String, dynamic>.from(snapshot.value as Map);
       }
     } catch (e) {
-      print('Error getting patient profile: $e');
+      debugPrint('Error getting patient profile: $e');
     }
     return null;
   }
@@ -112,7 +112,7 @@ class DatabaseService {
             .toList();
       }
     } catch (e) {
-      print('Error getting family members: $e');
+      debugPrint('Error getting family members: $e');
     }
     return [];
   }
@@ -135,7 +135,7 @@ class DatabaseService {
         );
       }
     } catch (e) {
-      print('Error adding family member: $e');
+      debugPrint('Error adding family member: $e');
     }
     return false;
   }
@@ -147,9 +147,9 @@ class DatabaseService {
   static Future<void> signOut() async {
     try {
       await _auth.signOut();
-      print('✅ User signed out successfully');
+      debugPrint('✅ User signed out successfully');
     } catch (e) {
-      print('❌ Error signing out: $e');
+      debugPrint('❌ Error signing out: $e');
     }
   }
 
@@ -186,7 +186,7 @@ class DatabaseService {
         return true;
       }
     } catch (e) {
-      print('Error sending email verification: $e');
+      debugPrint('Error sending email verification: $e');
     }
     return false;
   }

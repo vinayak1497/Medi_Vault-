@@ -31,7 +31,8 @@ class _DoctorPatientsScreenState extends State<DoctorPatientsScreen> {
     try {
       final User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        final patients = await PatientService.getPatientsByDoctor(user.uid);
+        // Show ALL registered patients across the system (from patient_profiles and patients)
+        final patients = await PatientService.getAllRegisteredPatients();
         setState(() {
           _patients = patients;
           _isLoading = false;

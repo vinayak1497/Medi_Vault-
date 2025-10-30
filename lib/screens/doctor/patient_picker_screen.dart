@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:health_buddy/models/patient.dart';
-import 'package:health_buddy/services/auth_service.dart';
 import 'package:health_buddy/services/patient_service.dart';
 
 class PatientPickerScreen extends StatefulWidget {
@@ -29,16 +28,9 @@ class _PatientPickerScreenState extends State<PatientPickerScreen> {
   }
 
   Future<void> _loadPatients([String query = '']) async {
-    final user = AuthService.getCurrentUser();
-    if (user == null) {
-      setState(() {
-        _loading = false;
-      });
-      return;
-    }
-
+    // Show all registered patients so doctors can select existing users
     setState(() => _loading = true);
-    final results = await PatientService.searchPatients(user.uid, query);
+    final results = await PatientService.searchAllPatients(query);
     setState(() {
       _patients = results;
       _loading = false;

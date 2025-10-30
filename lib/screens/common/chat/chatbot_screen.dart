@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:health_buddy/services/ai_service.dart';
+import 'package:health_buddy/services/personalized_health_ai_service.dart';
 import 'dart:async';
 
 class ChatbotScreen extends StatefulWidget {
@@ -11,8 +12,11 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final AIService _aiService = AIService();
+  final PersonalizedHealthAIService _personalizedAIService =
+      PersonalizedHealthAIService();
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  bool _isPersonalized = false;
 
   final List<Map<String, dynamic>> _messages = [
     {
@@ -23,6 +27,30 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     },
   ];
   bool _isSending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPersonalizedAvailability();
+  }
+
+  Future<void> _checkPersonalizedAvailability() async {
+    final hasHistory = await _personalizedAIService.hasPatientHistory();
+    if (mounted) {
+      setState(() {
+        _isPersonalized = hasHistory;
+        if (hasHistory) {
+          // Add info message about personalized AI
+          _messages.add({
+            'text':
+                '🌟 Personalized AI Mode: I\'ve detected your patient profile with medical history. I can now provide you with personalized health advice based on your prescriptions and medical information!',
+            'isUser': false,
+            'timestamp': DateTime.now(),
+          });
+        }
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -51,30 +79,43 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     _scrollToBottom();
 
     try {
-      // Get AI response with improved prompt
-      final aiResponse = await _aiService
-          .sendMessage(message)
-          .timeout(const Duration(seconds: 30));
+      String aiResponse;
+
+      // Use personalized AI if available
+      if (_isPersonalized) {
+        aiResponse = await _personalizedAIService
+            .sendPersonalizedMessage(message)
+            .timeout(const Duration(seconds: 30));
+      } else {
+        // Fall back to regular AI service
+        aiResponse = await _aiService
+            .sendMessage(message)
+            .timeout(const Duration(seconds: 30));
+      }
 
       // Add AI response
-      setState(() {
-        _messages.add({
-          'text': aiResponse,
-          'isUser': false,
-          'timestamp': DateTime.now(),
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'text': aiResponse,
+            'isUser': false,
+            'timestamp': DateTime.now(),
+          });
+          _isSending = false;
         });
-        _isSending = false;
-      });
+      }
     } on TimeoutException catch (_) {
-      setState(() {
-        _messages.add({
-          'text':
-              'Sorry, the request timed out. Please check your internet connection and try again.',
-          'isUser': false,
-          'timestamp': DateTime.now(),
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'text':
+                'Sorry, the request timed out. Please check your internet connection and try again.',
+            'isUser': false,
+            'timestamp': DateTime.now(),
+          });
+          _isSending = false;
         });
-        _isSending = false;
-      });
+      }
     } catch (e) {
       String errorMessage = 'Sorry, I encountered an error: ${e.toString()}. ';
       if (e.toString().contains('API key')) {
@@ -87,14 +128,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         errorMessage += 'Please check your internet connection and try again.';
       }
 
-      setState(() {
-        _messages.add({
-          'text': errorMessage,
-          'isUser': false,
-          'timestamp': DateTime.now(),
+      if (mounted) {
+        setState(() {
+          _messages.add({
+            'text': errorMessage,
+            'isUser': false,
+            'timestamp': DateTime.now(),
+          });
+          _isSending = false;
         });
-        _isSending = false;
-      });
+      }
     }
 
     // Scroll to bottom
@@ -117,7 +160,20 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Health AI Assistant'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Health AI Assistant'),
+            if (_isPersonalized)
+              Text(
+                '🌟 Personalized Mode',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+          ],
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),

@@ -75,10 +75,16 @@ class _SimplePrescriptionFormScreenState
     });
 
     try {
+      // Get current doctor's profile to fetch name
+      final doctorProfile = await AuthService.getCurrentUserProfile();
+      final doctorName =
+          doctorProfile?['fullName'] ?? doctorProfile?['name'] ?? 'Dr. Unknown';
+
       // Create updated prescription object
       final updatedPrescription = Prescription(
         id: widget.prescription.id,
         doctorId: currentUser.uid,
+        doctorName: doctorName,
         patientId: _selectedPatient!.id,
         patientName:
             _patientName.text.trim().isEmpty

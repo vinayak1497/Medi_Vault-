@@ -6,6 +6,67 @@ import 'package:health_buddy/models/patient.dart';
 class PatientService {
   static final DatabaseReference _database = FirebaseDatabase.instance.ref();
 
+  /// Helper: safely parse a timestamp or ISO string to DateTime
+  static DateTime _parseDate(dynamic value) {
+    try {
+      if (value == null) return DateTime.now();
+      if (value is int) {
+        // Firebase ServerValue.timestamp resolves to milliseconds since epoch
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      if (value is double) {
+        return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+      }
+      if (value is String) {
+        return DateTime.tryParse(value) ?? DateTime.now();
+      }
+    } catch (_) {}
+    return DateTime.now();
+  }
+
+  /// Helper: build Patient model from a generic profile map
+  static Patient _fromProfile(Map<String, dynamic> data, String id) {
+    final name = (data['fullName'] ?? data['name'] ?? 'Patient').toString();
+    final createdAt = _parseDate(data['createdAt']);
+    final updatedAt = _parseDate(data['updatedAt'] ?? data['createdAt']);
+
+    return Patient(
+      id: id,
+      name: name,
+      age: (data['age'] is int) ? data['age'] as int : null,
+      gender: data['gender']?.toString(),
+      phoneNumber:
+          (data['phoneNumber'] ?? data['phone'] ?? data['mobile'])?.toString(),
+      address: data['address']?.toString(),
+      email: data['email']?.toString(),
+      dateOfBirth:
+          data['dateOfBirth'] != null
+              ? DateTime.tryParse(data['dateOfBirth'].toString())
+              : null,
+      bloodGroup: data['bloodGroup']?.toString(),
+      weight:
+          data['weight'] != null
+              ? double.tryParse(data['weight'].toString())
+              : null,
+      height:
+          data['height'] != null
+              ? double.tryParse(data['height'].toString())
+              : null,
+      allergies:
+          data['allergies'] is List
+              ? List<String>.from(data['allergies'] as List)
+              : null,
+      medicalHistory:
+          data['medicalHistory'] is List
+              ? List<String>.from(data['medicalHistory'] as List)
+              : null,
+      emergencyContact: data['emergencyContact']?.toString(),
+      emergencyContactPhone: data['emergencyContactPhone']?.toString(),
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
   /// Get all patients for a doctor
   static Future<List<Patient>> getPatientsByDoctor(String doctorId) async {
     try {
@@ -176,5 +237,69 @@ class PatientService {
     } catch (e) {
       debugPrint('Error adding sample patients: $e');
     }
+  }
+
+  /// New: Get all registered patients (from both `patients` and `patient_profiles`)
+  static Future<List<Patient>> getAllRegisteredPatients() async {
+    try {
+      final List<Patient> results = [];
+
+      // Legacy patients node
+      try {
+        final snap = await _database.child('patients').get();
+        if (snap.exists && snap.value is Map) {
+          final map = Map<String, dynamic>.from(snap.value as Map);
+          map.forEach((id, value) {
+            final data = Map<String, dynamic>.from(value as Map);
+            try {
+              results.add(Patient.fromJson(data, id));
+            } catch (_) {
+              results.add(_fromProfile(data, id));
+            }
+          });
+        }
+      } catch (e) {
+        debugPrint('PatientService: error reading patients: $e');
+      }
+
+      // Profiles from signups
+      try {
+        final snap = await _database.child('patient_profiles').get();
+        if (snap.exists && snap.value is Map) {
+          final map = Map<String, dynamic>.from(snap.value as Map);
+          map.forEach((uid, value) {
+            final data = Map<String, dynamic>.from(value as Map);
+            final candidate = _fromProfile(data, uid);
+            final exists = results.any(
+              (p) =>
+                  (p.email != null && p.email == candidate.email) ||
+                  (p.name == candidate.name &&
+                      p.createdAt == candidate.createdAt),
+            );
+            if (!exists) results.add(candidate);
+          });
+        }
+      } catch (e) {
+        debugPrint('PatientService: error reading patient_profiles: $e');
+      }
+
+      results.sort((a, b) {
+        final byName = a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        if (byName != 0) return byName;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+      return results;
+    } catch (e) {
+      debugPrint('PatientService: error getAllRegisteredPatients: $e');
+      return [];
+    }
+  }
+
+  /// New: Search across all registered patients by name
+  static Future<List<Patient>> searchAllPatients(String query) async {
+    final all = await getAllRegisteredPatients();
+    if (query.isEmpty) return all;
+    final q = query.toLowerCase();
+    return all.where((p) => p.name.toLowerCase().contains(q)).toList();
   }
 }

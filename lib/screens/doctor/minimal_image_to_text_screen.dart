@@ -143,7 +143,7 @@ class _MinimalImageToTextScreenState extends State<MinimalImageToTextScreen> {
       backgroundColor: const Color(0xFFF8FAF8),
       appBar: AppBar(
         title: const Text(
-          'Extract Text (Gemini 2.0 Flash)',
+          'Extract Text',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: const Color(0xFF2E7D32),

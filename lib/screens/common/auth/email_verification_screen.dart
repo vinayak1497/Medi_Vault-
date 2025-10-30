@@ -31,7 +31,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
   }
 
   Future<void> _checkVerificationStatus() async {
-    print('🔍 Checking verification status...');
+    debugPrint('🔍 Checking verification status...');
 
     final user = AuthService.getCurrentUser();
     if (user != null) {
@@ -39,8 +39,8 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       await user.reload();
       final updatedUser = AuthService.getCurrentUser();
 
-      print('📧 User email: ${user.email}');
-      print('✅ Email verified: ${updatedUser?.emailVerified}');
+      debugPrint('📧 User email: ${user.email}');
+      debugPrint('✅ Email verified: ${updatedUser?.emailVerified}');
 
       if (updatedUser?.emailVerified == true) {
         setState(() {
@@ -65,7 +65,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               Map<String, dynamic>? doctorData;
               try {
                 final user = AuthService.getCurrentUser();
-                print('🔍 Email Verification - Current user: ${user?.uid}');
+                debugPrint(
+                  '🔍 Email Verification - Current user: ${user?.uid}',
+                );
 
                 if (user != null) {
                   final DatabaseReference userRef = FirebaseDatabase.instance
@@ -73,25 +75,25 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       .child('doctors') // Updated path to match AuthService
                       .child(user.uid);
                   final snapshot = await userRef.get();
-                  print('📊 Firebase snapshot exists: ${snapshot.exists}');
+                  debugPrint('📊 Firebase snapshot exists: ${snapshot.exists}');
 
                   if (snapshot.exists) {
                     doctorData = Map<String, dynamic>.from(
                       snapshot.value as Map,
                     );
-                    print('📋 Fetched doctor data: $doctorData');
-                    print('👤 Name from Firebase: ${doctorData['name']}');
-                    print(
+                    debugPrint('📋 Fetched doctor data: $doctorData');
+                    debugPrint('👤 Name from Firebase: ${doctorData['name']}');
+                    debugPrint(
                       '🆔 Doctor ID from Firebase: ${doctorData['doctorId']}',
                     );
                   } else {
-                    print('❌ No doctor data found in Firebase');
+                    debugPrint('❌ No doctor data found in Firebase');
                   }
                 } else {
-                  print('❌ No current user found');
+                  debugPrint('❌ No current user found');
                 }
               } catch (e) {
-                print('❌ Error fetching user data: $e');
+                debugPrint('❌ Error fetching user data: $e');
               }
 
               // Navigate to NMC verification prompt with doctor data
@@ -115,7 +117,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         });
       }
     } else {
-      print('❌ No user found');
+      debugPrint('❌ No user found');
       setState(() {
         _message = '❌ No user session found. Please try signing up again.';
         _isError = true;
@@ -148,7 +150,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
 
         // Send verification email
         await user.sendEmailVerification();
-        print('📧 Verification email resent to: ${user.email}');
+        debugPrint('📧 Verification email resent to: ${user.email}');
 
         setState(() {
           _isLoading = false;
@@ -174,14 +176,14 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         });
       }
     } on FirebaseAuthException catch (e) {
-      print('❌ Firebase error resending email: ${e.code} - ${e.message}');
+      debugPrint('❌ Firebase error resending email: ${e.code} - ${e.message}');
       setState(() {
         _isLoading = false;
         _message = 'Failed to resend email: ${e.message}';
         _isError = true;
       });
     } catch (e) {
-      print('❌ Error resending email: $e');
+      debugPrint('❌ Error resending email: $e');
       setState(() {
         _isLoading = false;
         _message = 'Failed to resend email. Please try again.';

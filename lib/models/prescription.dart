@@ -6,6 +6,7 @@ class Prescription {
   // Unique identifiers
   final String? id;
   final String doctorId;
+  final String? doctorName; // Doctor's full name
   final String? patientId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -52,6 +53,7 @@ class Prescription {
   const Prescription({
     this.id,
     required this.doctorId,
+    this.doctorName,
     this.patientId,
     this.createdAt,
     this.updatedAt,
@@ -101,6 +103,7 @@ class Prescription {
     return Prescription(
       id: id,
       doctorId: data['doctorId'] ?? '',
+      doctorName: data['doctorName'],
       patientId: data['patientId'],
       createdAt:
           data['createdAt'] != null
@@ -166,6 +169,7 @@ class Prescription {
   Map<String, dynamic> toMap() {
     return {
       'doctorId': doctorId,
+      'doctorName': doctorName,
       'patientId': patientId,
       'createdAt': createdAt?.millisecondsSinceEpoch,
       'updatedAt': updatedAt?.millisecondsSinceEpoch,
@@ -215,6 +219,7 @@ class Prescription {
   Prescription copyWith({
     String? id,
     String? doctorId,
+    String? doctorName,
     String? patientId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -249,6 +254,7 @@ class Prescription {
     return Prescription(
       id: id ?? this.id,
       doctorId: doctorId ?? this.doctorId,
+      doctorName: doctorName ?? this.doctorName,
       patientId: patientId ?? this.patientId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

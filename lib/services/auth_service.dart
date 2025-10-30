@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 
 class AuthService {
   static final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -26,21 +27,23 @@ class AuthService {
         password: password,
       );
 
-      print(
+      debugPrint(
         '✅ User created successfully in Firebase Auth: ${userCredential.user?.uid}',
       );
 
       // Step 2: Send email verification
       if (userCredential.user != null) {
         await userCredential.user!.sendEmailVerification();
-        print('✅ Email verification sent successfully');
+        debugPrint('✅ Email verification sent successfully');
       }
 
       // Step 3: Save user data to database if provided
       if (userData != null && userCredential.user != null) {
         try {
-          print('🔐 User authenticated: ${userCredential.user!.uid}');
-          print('📧 Email verified: ${userCredential.user!.emailVerified}');
+          debugPrint('🔐 User authenticated: ${userCredential.user!.uid}');
+          debugPrint(
+            '📧 Email verified: ${userCredential.user!.emailVerified}',
+          );
 
           final profileData = {
             ...userData,
@@ -55,27 +58,27 @@ class AuthService {
           final uid = userCredential.user!.uid;
 
           // 1. Save to main users collection (for authentication checks)
-          print('💾 Saving to users/$uid');
+          debugPrint('💾 Saving to users/$uid');
           await _database.child('users').child(uid).set(profileData);
 
           // 2. Save to specific profile collection based on user type
           final specificPath =
               userType == 'doctor' ? 'doctor_profiles' : 'patient_profiles';
-          print('� Saving to $specificPath/$uid');
+          debugPrint('� Saving to $specificPath/$uid');
           await _database.child(specificPath).child(uid).set(profileData);
 
-          print(
+          debugPrint(
             '✅ User profile saved to database successfully in both locations',
           );
         } catch (dbError) {
-          print(
+          debugPrint(
             '⚠️ Database save failed, but user account was created: $dbError',
           );
           if (dbError.toString().contains('permission')) {
-            print('🚫 FIREBASE DATABASE RULES ISSUE:');
-            print('   Go to Firebase Console > Realtime Database > Rules');
-            print('   Update rules to allow authenticated users access');
-            print(
+            debugPrint('🚫 FIREBASE DATABASE RULES ISSUE:');
+            debugPrint('   Go to Firebase Console > Realtime Database > Rules');
+            debugPrint('   Update rules to allow authenticated users access');
+            debugPrint(
               '   Required: {".read": "auth != null", ".write": "auth != null"}',
             );
           }
@@ -86,26 +89,26 @@ class AuthService {
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
-      print('❌ Firebase Auth error: ${e.code} - ${e.message}');
+      debugPrint('❌ Firebase Auth error: ${e.code} - ${e.message}');
       // Delete the user if database save failed and user was created
       if (userCredential?.user != null) {
         try {
           await userCredential!.user!.delete();
-          print('🧹 Cleaned up user account due to auth error');
+          debugPrint('🧹 Cleaned up user account due to auth error');
         } catch (cleanupError) {
-          print('⚠️ Failed to cleanup user account: $cleanupError');
+          debugPrint('⚠️ Failed to cleanup user account: $cleanupError');
         }
       }
       rethrow; // Re-throw the original Firebase exception
     } catch (e) {
-      print('❌ Unexpected error during registration: $e');
+      debugPrint('❌ Unexpected error during registration: $e');
       // Delete the user if it was created but something else failed
       if (userCredential?.user != null) {
         try {
           await userCredential!.user!.delete();
-          print('🧹 Cleaned up user account due to unexpected error');
+          debugPrint('🧹 Cleaned up user account due to unexpected error');
         } catch (cleanupError) {
-          print('⚠️ Failed to cleanup user account: $cleanupError');
+          debugPrint('⚠️ Failed to cleanup user account: $cleanupError');
         }
       }
       throw FirebaseAuthException(
@@ -155,9 +158,9 @@ class AuthService {
   static Future<void> signOut() async {
     try {
       await _auth.signOut();
-      print('✅ User signed out successfully');
+      debugPrint('✅ User signed out successfully');
     } catch (e) {
-      print('❌ Error signing out: $e');
+      debugPrint('❌ Error signing out: $e');
       throw Exception('Failed to sign out: ${e.toString()}');
     }
   }
@@ -226,7 +229,7 @@ class AuthService {
 
       return null;
     } catch (e) {
-      print('❌ Error getting user type: $e');
+      debugPrint('❌ Error getting user type: $e');
       return null;
     }
   }
@@ -236,27 +239,27 @@ class AuthService {
     try {
       final user = getCurrentUser();
       if (user == null) {
-        print('❌ No current user');
+        debugPrint('❌ No current user');
         return null;
       }
 
       if (!user.emailVerified) {
-        print('❌ User email not verified');
+        debugPrint('❌ User email not verified');
         return null;
       }
 
-      print('🔍 Looking for user profile for UID: ${user.uid}');
+      debugPrint('🔍 Looking for user profile for UID: ${user.uid}');
 
       // Check in users collection first (main profile data)
       try {
         final userSnapshot =
             await _database.child('users').child(user.uid).get();
         if (userSnapshot.exists) {
-          print('✅ Found profile in users collection');
+          debugPrint('✅ Found profile in users collection');
           return Map<String, dynamic>.from(userSnapshot.value as Map);
         }
       } catch (e) {
-        print('❌ Error accessing users collection: $e');
+        debugPrint('❌ Error accessing users collection: $e');
       }
 
       // Check in patient_profiles collection
@@ -264,11 +267,11 @@ class AuthService {
         final patientSnapshot =
             await _database.child('patient_profiles').child(user.uid).get();
         if (patientSnapshot.exists) {
-          print('✅ Found profile in patient_profiles collection');
+          debugPrint('✅ Found profile in patient_profiles collection');
           return Map<String, dynamic>.from(patientSnapshot.value as Map);
         }
       } catch (e) {
-        print('❌ Error accessing patient_profiles collection: $e');
+        debugPrint('❌ Error accessing patient_profiles collection: $e');
       }
 
       // Check in doctor_profiles collection (corrected path)
@@ -276,17 +279,17 @@ class AuthService {
         final doctorSnapshot =
             await _database.child('doctor_profiles').child(user.uid).get();
         if (doctorSnapshot.exists) {
-          print('✅ Found profile in doctor_profiles collection');
+          debugPrint('✅ Found profile in doctor_profiles collection');
           return Map<String, dynamic>.from(doctorSnapshot.value as Map);
         }
       } catch (e) {
-        print('❌ Error accessing doctor_profiles collection: $e');
+        debugPrint('❌ Error accessing doctor_profiles collection: $e');
       }
 
-      print('❌ No profile found in any collection');
+      debugPrint('❌ No profile found in any collection');
       return null;
     } catch (e) {
-      print('❌ Error getting user profile: $e');
+      debugPrint('❌ Error getting user profile: $e');
       return null;
     }
   }
@@ -299,28 +302,28 @@ class AuthService {
 
       // Check if user's email is verified
       if (!user.emailVerified) {
-        print('❌ User email not verified');
+        debugPrint('❌ User email not verified');
         return false;
       }
 
       // Check if user has a valid profile in the database
       final userProfile = await getCurrentUserProfile();
       if (userProfile == null) {
-        print('❌ User profile not found in database');
+        debugPrint('❌ User profile not found in database');
         return false;
       }
 
       // Check if user has a valid user type
       final userType = await getCurrentUserType();
       if (userType == null || (userType != 'doctor' && userType != 'patient')) {
-        print('❌ Invalid or missing user type: $userType');
+        debugPrint('❌ Invalid or missing user type: $userType');
         return false;
       }
 
-      print('✅ User is properly logged in and verified');
+      debugPrint('✅ User is properly logged in and verified');
       return true;
     } catch (e) {
-      print('❌ Error checking login status: $e');
+      debugPrint('❌ Error checking login status: $e');
       return false;
     }
   }
@@ -337,12 +340,12 @@ class AuthService {
         if (userProfile == null ||
             userType == null ||
             (userType != 'doctor' && userType != 'patient')) {
-          print('🧹 Clearing invalid authentication state');
+          debugPrint('🧹 Clearing invalid authentication state');
           await signOut();
         }
       }
     } catch (e) {
-      print('❌ Error clearing invalid auth state: $e');
+      debugPrint('❌ Error clearing invalid auth state: $e');
       // Sign out anyway to be safe
       await signOut();
     }

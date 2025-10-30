@@ -5,6 +5,9 @@ class GovScheme {
   final String imageUrl;
   final String websiteUrl;
   final DateTime launchDate;
+  final String eligibility;
+  final String benefits;
+  final String coverage;
 
   GovScheme({
     required this.id,
@@ -13,6 +16,9 @@ class GovScheme {
     required this.imageUrl,
     required this.websiteUrl,
     required this.launchDate,
+    this.eligibility = '',
+    this.benefits = '',
+    this.coverage = '',
   });
 
   factory GovScheme.fromJson(Map<String, dynamic> json) {
@@ -22,7 +28,13 @@ class GovScheme {
       description: json['description'] as String,
       imageUrl: json['imageUrl'] as String,
       websiteUrl: json['websiteUrl'] as String,
-      launchDate: DateTime.parse(json['launchDate'] as String),
+      launchDate:
+          json['launchDate'] != null
+              ? DateTime.parse(json['launchDate'] as String)
+              : DateTime.now(),
+      eligibility: json['eligibility'] as String? ?? '',
+      benefits: json['benefits'] as String? ?? '',
+      coverage: json['coverage'] as String? ?? '',
     );
   }
 
@@ -34,6 +46,9 @@ class GovScheme {
       'imageUrl': imageUrl,
       'websiteUrl': websiteUrl,
       'launchDate': launchDate.toIso8601String(),
+      'eligibility': eligibility,
+      'benefits': benefits,
+      'coverage': coverage,
     };
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:health_buddy/screens/doctor/nmc_verification_screen.dart';
-import 'package:health_buddy/services/auth_service.dart';
+import 'package:health_buddy/services/verification_cache_service.dart';
 
 class VerificationBadge extends StatefulWidget {
   const VerificationBadge({super.key});
@@ -13,41 +12,26 @@ class VerificationBadge extends StatefulWidget {
 class _VerificationBadgeState extends State<VerificationBadge> {
   bool _isVerified = false;
   bool _isLoading = true;
+  final VerificationCacheService _cacheService = VerificationCacheService();
 
   @override
   void initState() {
     super.initState();
-    _checkVerificationStatus();
+    _loadVerificationStatus();
   }
 
-  Future<void> _checkVerificationStatus() async {
-    try {
-      final user = AuthService.getCurrentUser();
-      if (user != null) {
-        final DatabaseReference userRef = FirebaseDatabase.instance
-            .ref()
-            .child('doctors')
-            .child(user.uid);
-
-        final snapshot = await userRef.get();
-        if (snapshot.exists) {
-          final userData = Map<String, dynamic>.from(snapshot.value as Map);
-          setState(() {
-            _isVerified =
-                userData['verified'] == true || userData['nmcVerified'] == true;
-            _isLoading = false;
-          });
-        } else {
-          setState(() {
-            _isVerified = false;
-            _isLoading = false;
-          });
-        }
-      }
-    } catch (e) {
-      print('Error checking verification status: $e');
+  Future<void> _loadVerificationStatus() async {
+    // If cache is already initialized, use it immediately
+    if (_cacheService.isInitialized()) {
       setState(() {
-        _isVerified = false;
+        _isVerified = _cacheService.getVerificationStatus();
+        _isLoading = false;
+      });
+    } else {
+      // First time: initialize and load
+      await _cacheService.initializeCache();
+      setState(() {
+        _isVerified = _cacheService.getVerificationStatus();
         _isLoading = false;
       });
     }

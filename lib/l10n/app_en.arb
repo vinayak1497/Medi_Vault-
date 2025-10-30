@@ -1,0 +1,12 @@
+{
+  "settings": "Settings",
+  "privacySettings": "Privacy Settings",
+  "notificationSettings": "Notification Settings",
+  "helpSupport": "Help & Support",
+  "logout": "Logout",
+  "language": "Language",
+  "selectLanguage": "Select Language",
+  "languageEnglish": "English",
+  "languageHindi": "Hindi",
+  "languageMarathi": "Marathi"
+}

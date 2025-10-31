@@ -19,7 +19,8 @@ class GeminiNearbyDoctorService {
       // Get place name from coordinates using reverse geocoding info
       final areaInfo = _getAreaFromCoordinates(latitude, longitude);
 
-      final prompt = '''You are a healthcare assistant with access to real-world medical facility data.
+      final prompt =
+          '''You are a healthcare assistant with access to real-world medical facility data.
 
 A patient is located at:
 - Latitude: $latitude
@@ -69,10 +70,14 @@ Return ONLY the JSON array, no markdown, no extra text, no explanations.
       debugPrint('🔍 Area: $areaInfo');
 
       final response = await _aiService.getResponse(prompt);
-      debugPrint('🤖 Gemini Response (first 500 chars): ${response.substring(0, (response.length > 500 ? 500 : response.length))}');
+      debugPrint(
+        '🤖 Gemini Response (first 500 chars): ${response.substring(0, (response.length > 500 ? 500 : response.length))}',
+      );
 
       // Parse JSON response
-      final List<Map<String, dynamic>> doctors = _parseNearbyDoctorsResponse(response);
+      final List<Map<String, dynamic>> doctors = _parseNearbyDoctorsResponse(
+        response,
+      );
 
       if (doctors.isNotEmpty) {
         debugPrint('✅ Found ${doctors.length} nearby doctors from Gemini');
@@ -93,14 +98,13 @@ Return ONLY the JSON array, no markdown, no extra text, no explanations.
       // Clean the response - remove markdown code blocks if present
       String cleanedResponse = response;
       if (cleanedResponse.contains('```json')) {
-        cleanedResponse = cleanedResponse
-            .replaceAll('```json', '')
-            .replaceAll('```', '')
-            .trim();
+        cleanedResponse =
+            cleanedResponse
+                .replaceAll('```json', '')
+                .replaceAll('```', '')
+                .trim();
       } else if (cleanedResponse.contains('```')) {
-        cleanedResponse = cleanedResponse
-            .replaceAll('```', '')
-            .trim();
+        cleanedResponse = cleanedResponse.replaceAll('```', '').trim();
       }
 
       debugPrint('📄 Cleaned Response: $cleanedResponse');
@@ -111,17 +115,22 @@ Return ONLY the JSON array, no markdown, no extra text, no explanations.
 
       for (var doc in jsonList) {
         try {
-          final Map<String, dynamic> doctorMap = Map<String, dynamic>.from(doc as Map);
+          final Map<String, dynamic> doctorMap = Map<String, dynamic>.from(
+            doc as Map,
+          );
 
           // Ensure all required fields exist
           final doctor = {
-            'clinicName': doctorMap['clinicName']?.toString() ?? 'Unknown Clinic',
+            'clinicName':
+                doctorMap['clinicName']?.toString() ?? 'Unknown Clinic',
             'doctorName': doctorMap['doctorName']?.toString() ?? 'Dr. Unknown',
             'contactNumber': doctorMap['contactNumber']?.toString() ?? '',
             'openingTime': doctorMap['openingTime']?.toString() ?? '09:00',
             'closingTime': doctorMap['closingTime']?.toString() ?? '18:00',
-            'address': doctorMap['address']?.toString() ?? 'Address not available',
-            'specialty': doctorMap['specialty']?.toString() ?? 'General Practice',
+            'address':
+                doctorMap['address']?.toString() ?? 'Address not available',
+            'specialty':
+                doctorMap['specialty']?.toString() ?? 'General Practice',
             'facilityType': doctorMap['facilityType']?.toString() ?? 'Private',
             'latitude': _parseDouble(doctorMap['latitude']),
             'longitude': _parseDouble(doctorMap['longitude']),

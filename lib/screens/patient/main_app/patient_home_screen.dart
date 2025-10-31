@@ -239,10 +239,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 _buildUpcomingAppointments(),
                 SizedBox(height: s),
 
-                // AI Assistant Card
-                _buildAIAssistantCard(),
-                SizedBox(height: s),
-
                 // Health Insights
                 _buildHealthInsights(),
                 SizedBox(height: s * 4), // Bottom padding for navigation
@@ -355,24 +351,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     final s = _spacing(context);
     final actions = [
       {
-        'icon': Icons.chat_bubble_outline,
-        'title': 'AI Health Chat',
-        'subtitle': 'Ask questions',
-        'color': const Color(0xFF4CAF50),
-        'onTap':
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ChatbotScreen()),
-            ),
-      },
-      {
-        'icon': Icons.mic_outlined,
-        'title': 'Voice Chat',
-        'subtitle': 'Quick voice note',
-        'color': const Color(0xFF2196F3),
-        'onTap': () {},
-      },
-      {
         'icon': Icons.local_hospital_outlined,
         'title': 'Find Doctor',
         'subtitle': 'Nearby doctors',
@@ -395,6 +373,26 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               context,
               MaterialPageRoute(builder: (context) => const GovSchemesScreen()),
             ),
+      },
+      {
+        'icon': Icons.chat_bubble_outline,
+        'title': 'AI Chat',
+        'subtitle': 'Ask health questions',
+        'color': const Color(0xFF4CAF50),
+        'onTap':
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ChatbotScreen()),
+            ),
+      },
+      {
+        'icon': Icons.medical_services_outlined,
+        'title': 'My Records',
+        'subtitle': 'Health documents',
+        'color': const Color(0xFF00BCD4),
+        'onTap': () {
+          // Navigate to records - will be implemented
+        },
       },
     ];
 
@@ -757,95 +755,6 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
                 );
               },
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAIAssistantCard() {
-    final s = _spacing(context);
-    return Container(
-      margin: EdgeInsets.fromLTRB(s, 0, s, 0),
-      padding: EdgeInsets.all(s),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF4CAF50).withValues(alpha: 0.3 * 255),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 44 + (s - 8) * 0.5,
-                height: 44 + (s - 8) * 0.5,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2 * 255),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: const Icon(
-                  Icons.psychology,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-              SizedBox(width: s * 0.8),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Health AI Assistant',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      'Get instant answers to your health questions',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: s * 0.8),
-          ElevatedButton(
-            onPressed:
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChatbotScreen(),
-                  ),
-                ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF4CAF50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 0,
-            ),
-            child: const Text(
-              'Start Chat',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
         ],
       ),
     );

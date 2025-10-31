@@ -506,8 +506,9 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen>
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: _getFacilityTypeColor(facilityType)
-                                  .withValues(alpha: 0.15 * 255),
+                              color: _getFacilityTypeColor(
+                                facilityType,
+                              ).withValues(alpha: 0.15 * 255),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(

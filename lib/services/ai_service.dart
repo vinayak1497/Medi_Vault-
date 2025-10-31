@@ -787,6 +787,124 @@ DO NOT return any text outside the JSON. Return only a valid JSON object.''';
     }
   }
 
+  /// Transcribe audio file to text using Gemini API
+  /// Supports audio formats: mp3, wav, m4a, flac, opus, aac, etc.
+  Future<Map<String, dynamic>> transcribeAudio(String audioPath) async {
+    try {
+      final File audioFile = File(audioPath);
+
+      if (!await audioFile.exists()) {
+        return {
+          'error': 'Audio file not found at path: $audioPath',
+          'text': null,
+        };
+      }
+
+      final audioBytes = await audioFile.readAsBytes();
+      final base64Audio = await Isolate.run(() => base64Encode(audioBytes));
+      final String mimeType = _getAudioMimeType(audioPath);
+
+      const String prompt =
+          'Transcribe the entire audio content to plain text. '
+          'Include all spoken words, medical terminology, patient information, and instructions. '
+          'Preserve the natural flow and structure of the speech. '
+          'Do NOT return JSON or markdown; return ONLY the raw transcribed text.';
+
+      final Uri url = Uri.parse(_baseUrl);
+
+      await _throttlePerMinute();
+      await _waitForRateLimit();
+
+      final requestBody = {
+        'contents': [
+          {
+            'role': 'user',
+            'parts': [
+              {'text': prompt},
+              {
+                'inline_data': {'mime_type': mimeType, 'data': base64Audio},
+              },
+            ],
+          },
+        ],
+        'generationConfig': {
+          'temperature': 0.0,
+          'topK': 32,
+          'topP': 0.9,
+          'maxOutputTokens': 8192,
+        },
+      };
+
+      debugPrint('🌐 [Audio Transcription] API URL: $url');
+      debugPrint(
+        '🔑 [Audio Transcription] API Key prefix: '
+        '${_apiKey.isNotEmpty ? _apiKey.substring(0, 6) : '(empty)'}',
+      );
+
+      final response = await http
+          .post(url, headers: _getAuthHeaders(), body: jsonEncode(requestBody))
+          .timeout(const Duration(seconds: 120));
+
+      if (response.statusCode != 200) {
+        if (response.statusCode == 429) {
+          return {
+            'error': 'API rate limit exceeded. Please wait and try again.',
+            'text': null,
+          };
+        }
+        return {
+          'error': 'API error: Status ${response.statusCode}.',
+          'text': null,
+        };
+      }
+
+      final data = jsonDecode(response.body);
+      if (data['candidates'] != null &&
+          data['candidates'].isNotEmpty &&
+          data['candidates'][0]['content'] != null &&
+          data['candidates'][0]['content']['parts'] != null &&
+          data['candidates'][0]['content']['parts'].isNotEmpty) {
+        final text = data['candidates'][0]['content']['parts'][0]['text'];
+        return {'error': null, 'text': (text ?? '').toString().trim()};
+      }
+
+      return {'error': 'No valid response from API', 'text': null};
+    } on TimeoutException {
+      return {
+        'error': 'Request timeout. Please check your internet connection.',
+        'text': null,
+      };
+    } catch (e) {
+      return {
+        'error': 'Error transcribing audio: ${e.toString()}',
+        'text': null,
+      };
+    }
+  }
+
+  /// Helper method to determine MIME type from audio file extension
+  String _getAudioMimeType(String filePath) {
+    final ext = filePath.toLowerCase().split('.').last;
+    switch (ext) {
+      case 'mp3':
+        return 'audio/mpeg';
+      case 'wav':
+        return 'audio/wav';
+      case 'm4a':
+        return 'audio/mp4';
+      case 'flac':
+        return 'audio/flac';
+      case 'opus':
+        return 'audio/opus';
+      case 'aac':
+        return 'audio/aac';
+      case 'ogg':
+        return 'audio/ogg';
+      default:
+        return 'audio/mpeg';
+    }
+  }
+
   /// Extract JSON object from API response text
   Map<String, dynamic>? _extractJsonFromResponse(String responseText) {
     try {

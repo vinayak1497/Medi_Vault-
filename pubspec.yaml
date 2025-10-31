@@ -29,6 +29,8 @@ dependencies:
   flutter_local_notifications: ^17.2.1
   # For converting speech to text (voice assistant).
   speech_to_text: ^7.3.0
+  # For audio recording functionality
+  record: ^5.1.0
   # For launching URLs (e.g., in "GOV Schemes").
   url_launcher: ^6.3.0
   # For location services

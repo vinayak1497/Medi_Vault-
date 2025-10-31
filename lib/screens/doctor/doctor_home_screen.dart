@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:health_buddy/screens/doctor/nmc_verification_screen.dart';
 import 'package:health_buddy/screens/doctor/minimal_image_to_text_screen.dart';
+import 'package:health_buddy/screens/doctor/voice_recording_session_screen.dart';
 import 'package:health_buddy/screens/doctor/doctor_appointments_screen.dart';
 import 'package:health_buddy/widgets/verification_badge.dart';
 import 'package:health_buddy/services/verification_cache_service.dart';
@@ -16,11 +16,6 @@ class DoctorHomeScreen extends StatefulWidget {
 }
 
 class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
-  final stt.SpeechToText _speech = stt.SpeechToText();
-  bool _isListening = false;
-  String _transcribedText = '';
-  final bool _isProcessing = false;
-  final String _processingMessage = '';
   final VerificationCacheService _cacheService = VerificationCacheService();
   int _pendingAppointmentsCount = 0;
 
@@ -47,26 +42,14 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
     }
   }
 
-  void _startListening() async {
-    bool available = await _speech.initialize(
-      onStatus: (status) => print('Status: $status'),
-      onError: (error) => print('Error: $error'),
+  /// Navigate to voice recording session
+  void _navigateToVoiceRecording() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const VoiceRecordingSessionScreen(),
+      ),
     );
-
-    if (available) {
-      setState(() => _isListening = true);
-      _speech.listen(
-        onResult:
-            (result) => setState(() {
-              _transcribedText = result.recognizedWords;
-            }),
-      );
-    }
-  }
-
-  void _stopListening() {
-    _speech.stop();
-    setState(() => _isListening = false);
   }
 
   /// Navigate to minimal image-to-text screen
@@ -188,52 +171,22 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
 
             // Start Recording Session button
             ElevatedButton.icon(
-              onPressed: _isListening ? _stopListening : _startListening,
+              onPressed: _navigateToVoiceRecording,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 20),
+                backgroundColor: const Color(0xFF2E7D32),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                elevation: 4,
               ),
-              icon: Icon(_isListening ? Icons.stop : Icons.mic),
-              label: Text(
-                _isListening ? 'Stop Recording' : 'Start Recording Session',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              icon: const Icon(Icons.mic),
+              label: const Text(
+                'Start Recording Session',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 20),
-
-            // Transcribed text display
-            if (_transcribedText.isNotEmpty) ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _transcribedText,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // Processing indicator
-            if (_isProcessing) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(width: 10),
-                  Text(_processingMessage),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
 
             // OR divider
             const Row(
@@ -250,7 +203,7 @@ class _DoctorHomeScreenState extends State<DoctorHomeScreen> {
 
             // Scan Prescription button
             OutlinedButton.icon(
-              onPressed: _isProcessing ? null : _navigateToScanner,
+              onPressed: _navigateToScanner,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(

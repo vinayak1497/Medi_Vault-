@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:health_buddy/models/gov_scheme.dart';
-import 'package:health_buddy/services/gov_scheme_ai_service.dart';
+import 'package:medivault_ai/models/gov_scheme.dart';
+import 'package:medivault_ai/services/gov_scheme_ai_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class GovSchemesScreen extends StatefulWidget {

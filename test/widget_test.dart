@@ -13,11 +13,11 @@ void main() {
     // Pump a minimal MaterialApp to ensure rendering pipeline works in tests.
     await tester.pumpWidget(
       const MaterialApp(
-        home: Scaffold(body: Center(child: Text('Health Buddy'))),
+        home: Scaffold(body: Center(child: Text('MediVault AI'))),
       ),
     );
 
     // Verify core text is present
-    expect(find.text('Health Buddy'), findsOneWidget);
+    expect(find.text('MediVault AI'), findsOneWidget);
   });
 }

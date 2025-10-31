@@ -1,6 +1,6 @@
 {
-    "name": "health_buddy",
-    "short_name": "health_buddy",
+    "name": "medivault_ai",
+    "short_name": "MediVault AI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",

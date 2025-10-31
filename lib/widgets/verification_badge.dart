@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:health_buddy/screens/doctor/nmc_verification_screen.dart';
-import 'package:health_buddy/services/verification_cache_service.dart';
+import 'package:medivault_ai/screens/doctor/nmc_verification_screen.dart';
+import 'package:medivault_ai/services/verification_cache_service.dart';
 
 class VerificationBadge extends StatefulWidget {
   const VerificationBadge({super.key});

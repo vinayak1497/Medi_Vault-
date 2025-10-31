@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:health_buddy/screens/common/chat/chatbot_screen.dart';
-import 'package:health_buddy/screens/common/details/appointment_details_screen.dart';
-import 'package:health_buddy/screens/patient/doctors_near_me_screen.dart';
-import 'package:health_buddy/screens/patient/gov_schemes_screen.dart';
-import 'package:health_buddy/services/database_service.dart';
+import 'package:medivault_ai/screens/common/chat/chatbot_screen.dart';
+import 'package:medivault_ai/screens/common/details/appointment_details_screen.dart';
+import 'package:medivault_ai/screens/patient/doctors_near_me_screen.dart';
+import 'package:medivault_ai/screens/patient/gov_schemes_screen.dart';
+import 'package:medivault_ai/services/database_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

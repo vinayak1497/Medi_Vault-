@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:health_buddy/services/ai_service.dart';
+import 'package:medivault_ai/services/ai_service.dart';
 
 class AIDoctorsScreen extends StatefulWidget {
   const AIDoctorsScreen({super.key});

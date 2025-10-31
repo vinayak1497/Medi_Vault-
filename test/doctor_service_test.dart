@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:convert';
-import 'package:health_buddy/services/ai_service.dart';
+import 'package:medivault_ai/services/ai_service.dart';
 
 void main() {
   group('Doctor Service Tests', () {

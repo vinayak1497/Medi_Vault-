@@ -1,5 +1,5 @@
 import 'package:firebase_database/firebase_database.dart';
-import 'package:health_buddy/models/prescription.dart';
+import 'package:medivault_ai/models/prescription.dart';
 
 /// Service for doctor-related operations in Firebase
 class DoctorService {

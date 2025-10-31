@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:health_buddy/services/ai_service.dart';
+import 'package:medivault_ai/services/ai_service.dart';
 import 'dart:convert';
-import 'package:health_buddy/screens/patient/doctor_details_screen.dart';
+import 'package:medivault_ai/screens/patient/doctor_details_screen.dart';
 
 class DoctorsNearMeScreen extends StatefulWidget {
   const DoctorsNearMeScreen({super.key});

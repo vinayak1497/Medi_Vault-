@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:health_buddy/models/medical_data.dart';
-import 'package:health_buddy/screens/doctor/doctor_signup_step2_screen.dart';
-import 'package:health_buddy/screens/doctor/doctor_login_screen.dart';
+import 'package:medivault_ai/models/medical_data.dart';
+import 'package:medivault_ai/screens/doctor/doctor_signup_step2_screen.dart';
+import 'package:medivault_ai/screens/doctor/doctor_login_screen.dart';
 
 class DoctorSignupStep1Screen extends StatefulWidget {
   const DoctorSignupStep1Screen({super.key});

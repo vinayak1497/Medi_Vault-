@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:health_buddy/models/prescription.dart';
-import 'package:health_buddy/screens/doctor/simple_prescription_form_screen.dart';
-import 'package:health_buddy/services/ai_service.dart';
-import 'package:health_buddy/services/auth_service.dart';
-import 'package:health_buddy/services/camera_service.dart';
+import 'package:medivault_ai/models/prescription.dart';
+import 'package:medivault_ai/screens/doctor/simple_prescription_form_screen.dart';
+import 'package:medivault_ai/services/ai_service.dart';
+import 'package:medivault_ai/services/auth_service.dart';
+import 'package:medivault_ai/services/camera_service.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 /// Minimal screen: select an image -> extract plain text with Gemini 2.0 Flash (v1beta) -> auto-format -> review/edit

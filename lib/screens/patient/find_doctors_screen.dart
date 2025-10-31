@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:health_buddy/services/ai_service.dart';
-import 'package:health_buddy/services/appointment_service.dart';
-import 'package:health_buddy/services/auth_service.dart';
+import 'package:medivault_ai/services/ai_service.dart';
+import 'package:medivault_ai/services/appointment_service.dart';
+import 'package:medivault_ai/services/auth_service.dart';
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 

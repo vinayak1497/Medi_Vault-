@@ -1,4 +1,4 @@
-import 'package:health_buddy/models/gov_scheme.dart';
+import 'package:medivault_ai/models/gov_scheme.dart';
 
 class GovSchemeService {
   // This would typically fetch from an API

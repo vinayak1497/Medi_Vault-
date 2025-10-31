@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
-import 'package:health_buddy/utils/constants.dart';
-import 'package:health_buddy/services/database_service.dart';
+import 'package:medivault_ai/utils/constants.dart';
+import 'package:medivault_ai/services/database_service.dart';
 
 /// PersonalizedHealthAIService enhances AI responses with patient-specific healthcare data
 /// Fetches prescriptions, medical history, and other health data from Firebase,

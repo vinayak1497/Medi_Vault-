@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:health_buddy/services/ai_service.dart';
+import 'package:medivault_ai/services/ai_service.dart';
 
 class AITestScreen extends StatefulWidget {
   const AITestScreen({super.key});

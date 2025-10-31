@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:health_buddy/utils/constants.dart';
-import 'package:health_buddy/models/gov_scheme.dart';
+import 'package:medivault_ai/utils/constants.dart';
+import 'package:medivault_ai/models/gov_scheme.dart';
 
 /// Service to fetch government medical and health schemes using Gemini API
 class GovSchemeAIService {

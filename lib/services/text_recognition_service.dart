@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:health_buddy/models/prescription.dart';
-import 'package:health_buddy/services/ai_service.dart';
+import 'package:medivault_ai/models/prescription.dart';
+import 'package:medivault_ai/services/ai_service.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
 /// Service for extracting text from prescription images using Gemini AI

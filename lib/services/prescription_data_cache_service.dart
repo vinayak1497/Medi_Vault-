@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:medivault_ai/models/prescription.dart';
+import 'package:health_buddy/models/prescription.dart';
 
 /// Service for temporarily caching prescription data during navigation
 /// Ensures data persists when navigating from scanner to review/edit screens

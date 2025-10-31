@@ -1,4 +1,4 @@
-import 'package:medivault_ai/models/prescription.dart';
+import 'package:health_buddy/models/prescription.dart';
 
 /// Maps AI-extracted data to Prescription model
 class PrescriptionAIMapper {

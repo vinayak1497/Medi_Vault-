@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:medivault_ai/models/nmc_verification.dart';
+import 'package:health_buddy/models/nmc_verification.dart';
 
 class NMCVerificationService {
   // RapidAPI Configuration

@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
       valueListenable: MyApp.localeNotifier,
       builder: (_, locale, __) {
         return MaterialApp(
-          title: 'MediVault AI',
+          title: 'Health Buddy',
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF5DADE2),

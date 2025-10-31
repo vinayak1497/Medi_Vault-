@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:medivault_ai/screens/doctor/doctor_signup_step1_screen.dart';
-import 'package:medivault_ai/screens/common/auth/email_verification_screen.dart';
-import 'package:medivault_ai/screens/doctor/doctor_dashboard.dart';
-import 'package:medivault_ai/services/auth_service.dart';
+import 'package:health_buddy/screens/doctor/doctor_signup_step1_screen.dart';
+import 'package:health_buddy/screens/common/auth/email_verification_screen.dart';
+import 'package:health_buddy/screens/doctor/doctor_dashboard.dart';
+import 'package:health_buddy/services/auth_service.dart';
 
 class DoctorLoginScreen extends StatefulWidget {
   const DoctorLoginScreen({super.key});

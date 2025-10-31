@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:medivault_ai/models/nmc_verification.dart';
-import 'package:medivault_ai/services/nmc_verification_service.dart';
-import 'package:medivault_ai/screens/doctor/nmc_verification_example_screen.dart';
-import 'package:medivault_ai/screens/doctor/doctor_dashboard.dart';
-import 'package:medivault_ai/services/auth_service.dart';
+import 'package:health_buddy/models/nmc_verification.dart';
+import 'package:health_buddy/services/nmc_verification_service.dart';
+import 'package:health_buddy/screens/doctor/nmc_verification_example_screen.dart';
+import 'package:health_buddy/screens/doctor/doctor_dashboard.dart';
+import 'package:health_buddy/services/auth_service.dart';
 
 class NMCVerificationScreen extends StatefulWidget {
   final Map<String, dynamic>? doctorData;

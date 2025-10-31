@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/services/ai_service.dart';
-import 'package:medivault_ai/services/personalized_health_ai_service.dart';
+import 'package:health_buddy/services/ai_service.dart';
+import 'package:health_buddy/services/personalized_health_ai_service.dart';
 import 'dart:async';
 
 class ChatbotScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final List<Map<String, dynamic>> _messages = [
     {
       'text':
-          'Hello! I\'m your MediVault AI assistant powered by Gemini. I can help you with health-related questions. What would you like to know?',
+          'Hello! I\'m your Health Buddy AI assistant powered by Gemini. I can help you with health-related questions. What would you like to know?',
       'isUser': false,
       'timestamp': DateTime.now(),
     },

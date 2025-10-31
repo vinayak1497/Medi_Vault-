@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:medivault_ai/services/auth_service.dart';
-import 'package:medivault_ai/screens/doctor/post_registration_nmc_prompt_screen.dart';
+import 'package:health_buddy/services/auth_service.dart';
+import 'package:health_buddy/screens/doctor/post_registration_nmc_prompt_screen.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
   final String email;

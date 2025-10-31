@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/models/patient.dart';
-import 'package:medivault_ai/services/patient_service.dart';
+import 'package:health_buddy/models/patient.dart';
+import 'package:health_buddy/services/patient_service.dart';
 
 class PatientPickerScreen extends StatefulWidget {
   const PatientPickerScreen({super.key});

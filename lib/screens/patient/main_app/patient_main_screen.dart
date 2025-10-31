@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/screens/patient/main_app/patient_home_screen.dart';
-import 'package:medivault_ai/screens/patient/main_app/patient_records_screen.dart';
-import 'package:medivault_ai/screens/patient/main_app/patient_profile_screen.dart';
+import 'package:health_buddy/screens/patient/main_app/patient_home_screen.dart';
+import 'package:health_buddy/screens/patient/main_app/patient_records_screen.dart';
+import 'package:health_buddy/screens/patient/main_app/patient_profile_screen.dart';
 
 class PatientMainScreen extends StatefulWidget {
   const PatientMainScreen({super.key});

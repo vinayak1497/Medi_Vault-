@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:medivault_ai/screens/common/details/scan_preview_screen.dart';
+import 'package:health_buddy/screens/common/details/scan_preview_screen.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});

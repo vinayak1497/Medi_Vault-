@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:medivault_ai/screens/common/auth/splash_screen.dart';
-import 'package:medivault_ai/screens/common/auth/signup_screen.dart';
-import 'package:medivault_ai/screens/common/auth/forgot_password_screen.dart';
-import 'package:medivault_ai/utils/validators.dart';
+import 'package:health_buddy/screens/common/auth/splash_screen.dart';
+import 'package:health_buddy/screens/common/auth/signup_screen.dart';
+import 'package:health_buddy/screens/common/auth/forgot_password_screen.dart';
+import 'package:health_buddy/utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

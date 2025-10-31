@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/services/nmc_verification_service.dart';
-import 'package:medivault_ai/models/nmc_verification.dart';
+import 'package:health_buddy/services/nmc_verification_service.dart';
+import 'package:health_buddy/models/nmc_verification.dart';
 
 /// Example screen showing how to use the NMC Verification Service
 /// This demonstrates the basic usage patterns for integrating the service

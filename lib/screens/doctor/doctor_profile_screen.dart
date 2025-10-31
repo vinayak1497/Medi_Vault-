@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:medivault_ai/services/auth_service.dart';
-import 'package:medivault_ai/screens/common/auth/user_type_screen.dart';
+import 'package:health_buddy/services/auth_service.dart';
+import 'package:health_buddy/screens/common/auth/user_type_screen.dart';
 
 class DoctorProfileScreen extends StatefulWidget {
   const DoctorProfileScreen({super.key});

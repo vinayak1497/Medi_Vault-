@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:medivault_ai/services/auth_service.dart';
-import 'package:medivault_ai/services/database_service.dart';
+import 'package:health_buddy/services/auth_service.dart';
+import 'package:health_buddy/services/database_service.dart';
 
 class PatientRecordsScreen extends StatefulWidget {
   const PatientRecordsScreen({super.key});
@@ -14,7 +14,7 @@ class PatientRecordsScreen extends StatefulWidget {
 class _PatientRecordsScreenState extends State<PatientRecordsScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _prescriptions = [];
-  List<String> _patientNames = [];
+  final List<String> _patientNames = [];
 
   @override
   void initState() {
@@ -357,7 +357,7 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen> {
                     border: Border.all(color: Colors.grey[200]!, width: 1),
                   ),
                   child: Text(
-                    (prescription['extractedText'] as String)
+                    '${(prescription['extractedText'] as String)
                             .substring(
                               0,
                               (prescription['extractedText'] as String).length >
@@ -366,8 +366,7 @@ class _PatientRecordsScreenState extends State<PatientRecordsScreen> {
                                   : (prescription['extractedText'] as String)
                                       .length,
                             )
-                            .replaceAll('\n', ' ') +
-                        '...',
+                            .replaceAll('\n', ' ')}...',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey[700],

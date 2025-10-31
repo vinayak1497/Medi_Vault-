@@ -1,6 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/models/patient.dart';
+import 'package:health_buddy/models/patient.dart';
 
 /// Service for managing patient data in Firebase Realtime Database
 class PatientService {

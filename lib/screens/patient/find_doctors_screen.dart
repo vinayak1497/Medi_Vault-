@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:medivault_ai/services/ai_service.dart';
-import 'package:medivault_ai/services/appointment_service.dart';
-import 'package:medivault_ai/services/auth_service.dart';
-import 'dart:convert';
+import 'package:health_buddy/services/ai_service.dart';
+import 'package:health_buddy/services/appointment_service.dart';
+import 'package:health_buddy/services/auth_service.dart';
+import 'package:health_buddy/services/gemini_nearby_doctor_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class FindDoctorsScreen extends StatefulWidget {
@@ -23,11 +23,12 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen>
   Position? _currentPosition;
   List<Map<String, dynamic>> _nearbyDoctors = [];
   List<Map<String, dynamic>> _firebaseDoctors = [];
-  final AIService _aiService = AIService();
+  late GeminiNearbyDoctorService _geminiNearbyDoctorService;
 
   @override
   void initState() {
     super.initState();
+    _geminiNearbyDoctorService = GeminiNearbyDoctorService();
     _tabController = TabController(length: 2, vsync: this);
     _loadDoctors();
   }
@@ -109,76 +110,31 @@ class _FindDoctorsScreenState extends State<FindDoctorsScreen>
     }
   }
 
-  /// Get nearby doctors from Gemini API
+  /// Get nearby doctors from Gemini API with patient's exact location
   Future<void> _getNearbyDoctorsFromGemini() async {
     if (_currentPosition == null) return;
 
     try {
-      final prompt = '''
-You are a healthcare information assistant. I need you to find doctors near me.
+      debugPrint('🔍 Fetching nearby doctors using Gemini AI...');
+      final nearbyDoctors = await _geminiNearbyDoctorService
+          .getNearbyDoctorsFromGemini(_currentPosition!);
 
-My location: Latitude ${_currentPosition!.latitude}, Longitude ${_currentPosition!.longitude}
+      setState(() {
+        _nearbyDoctors = nearbyDoctors;
+      });
 
-Please provide a list of 5-8 doctors/clinics near this location. For each, provide:
-1. Clinic/Hospital Name
-2. Doctor Name
-3. Contact Number (if available, otherwise leave blank)
-4. Opening Time (e.g., 09:00 AM)
-5. Closing Time (e.g., 06:00 PM)
-6. Google Maps Link (if available)
-
-Format your response as a JSON array with this structure:
-[
-  {
-    "clinicName": "name",
-    "doctorName": "name",
-    "contactNumber": "number or blank",
-    "openingTime": "HH:MM",
-    "closingTime": "HH:MM",
-    "address": "address",
-    "mapsLink": "google maps url"
-  }
-]
-
-Return ONLY valid JSON, no markdown or extra text.
-''';
-
-      final response = await _aiService.getResponse(prompt);
-      debugPrint('🤖 Gemini Response: $response');
-
-      // Parse JSON response
-      try {
-        final List<dynamic> doctorsList = jsonDecode(response);
-        final doctors =
-            doctorsList
-                .map(
-                  (doc) => {
-                    'clinicName': doc['clinicName'] ?? 'Unknown Clinic',
-                    'doctorName': doc['doctorName'] ?? 'Dr. Unknown',
-                    'contactNumber': doc['contactNumber'] ?? '',
-                    'openingTime': doc['openingTime'] ?? '09:00',
-                    'closingTime': doc['closingTime'] ?? '18:00',
-                    'address': doc['address'] ?? 'Address not available',
-                    'mapsLink': doc['mapsLink'] ?? '',
-                    'source': 'gemini',
-                  },
-                )
-                .toList();
-
-        setState(() {
-          _nearbyDoctors = doctors;
-        });
-        debugPrint('✅ Found ${doctors.length} nearby doctors');
-      } catch (e) {
-        debugPrint('⚠️ Failed to parse Gemini response: $e');
-        setState(() {
-          _nearbyDoctors = [];
-        });
+      if (nearbyDoctors.isNotEmpty) {
+        debugPrint(
+          '✅ Successfully found ${nearbyDoctors.length} nearby doctors from Gemini',
+        );
+      } else {
+        debugPrint('⚠️ No nearby doctors found in Gemini response');
       }
     } catch (e) {
-      debugPrint('❌ Error getting nearby doctors: $e');
+      debugPrint('❌ Error getting nearby doctors from Gemini: $e');
       setState(() {
         _nearbyDoctors = [];
+        _errorMessage = 'Error fetching nearby doctors: ${e.toString()}';
       });
     }
   }
@@ -482,6 +438,7 @@ Return ONLY valid JSON, no markdown or extra text.
     final address = doctor['address'] ?? 'Address not provided';
     final specialty = doctor['specialty'] ?? doctor['specialization'] ?? '';
     final mapsLink = doctor['mapsLink'] ?? '';
+    final facilityType = doctor['facilityType'] ?? 'Medical Facility';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -538,6 +495,29 @@ Return ONLY valid JSON, no markdown or extra text.
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
+                          ),
+                        ),
+                      if (facilityType.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _getFacilityTypeColor(facilityType)
+                                  .withValues(alpha: 0.15 * 255),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              facilityType,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: _getFacilityTypeColor(facilityType),
+                              ),
+                            ),
                           ),
                         ),
                     ],
@@ -632,6 +612,19 @@ Return ONLY valid JSON, no markdown or extra text.
         ),
       ),
     );
+  }
+
+  /// Get color based on facility type
+  Color _getFacilityTypeColor(String facilityType) {
+    final type = facilityType.toLowerCase();
+    if (type.contains('private')) {
+      return const Color(0xFF2196F3); // Blue
+    } else if (type.contains('government') || type.contains('govt')) {
+      return const Color(0xFF4CAF50); // Green
+    } else if (type.contains('corporate')) {
+      return const Color(0xFFFFC107); // Amber
+    }
+    return Colors.grey;
   }
 
   /// Build info row

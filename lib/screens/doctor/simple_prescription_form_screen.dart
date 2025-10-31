@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/models/prescription.dart';
-import 'package:medivault_ai/services/doctor_service.dart';
-import 'package:medivault_ai/models/patient.dart';
-import 'package:medivault_ai/screens/doctor/patient_picker_screen.dart';
-import 'package:medivault_ai/screens/common/auth/signup_screen.dart';
-import 'package:medivault_ai/services/patient_service.dart';
-import 'package:medivault_ai/services/auth_service.dart';
+import 'package:health_buddy/models/prescription.dart';
+import 'package:health_buddy/services/doctor_service.dart';
+import 'package:health_buddy/models/patient.dart';
+import 'package:health_buddy/screens/doctor/patient_picker_screen.dart';
+import 'package:health_buddy/screens/common/auth/signup_screen.dart';
+import 'package:health_buddy/services/patient_service.dart';
+import 'package:health_buddy/services/auth_service.dart';
 
 /// Simplified prescription form screen that shows the raw extracted text
 class SimplePrescriptionFormScreen extends StatefulWidget {

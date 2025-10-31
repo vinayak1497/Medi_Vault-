@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:medivault_ai/screens/doctor/nmc_verification_screen.dart';
-import 'package:medivault_ai/screens/doctor/minimal_image_to_text_screen.dart';
-import 'package:medivault_ai/screens/doctor/doctor_appointments_screen.dart';
-import 'package:medivault_ai/widgets/verification_badge.dart';
-import 'package:medivault_ai/services/verification_cache_service.dart';
-import 'package:medivault_ai/services/appointment_service.dart';
+import 'package:health_buddy/screens/doctor/nmc_verification_screen.dart';
+import 'package:health_buddy/screens/doctor/minimal_image_to_text_screen.dart';
+import 'package:health_buddy/screens/doctor/doctor_appointments_screen.dart';
+import 'package:health_buddy/widgets/verification_badge.dart';
+import 'package:health_buddy/services/verification_cache_service.dart';
+import 'package:health_buddy/services/appointment_service.dart';
 
 class DoctorHomeScreen extends StatefulWidget {
   const DoctorHomeScreen({super.key});

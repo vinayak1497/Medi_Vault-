@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:medivault_ai/screens/common/auth/verification_screen.dart';
-import 'package:medivault_ai/services/auth_service.dart';
-import 'package:medivault_ai/utils/validators.dart';
+import 'package:health_buddy/screens/common/auth/verification_screen.dart';
+import 'package:health_buddy/services/auth_service.dart';
+import 'package:health_buddy/utils/validators.dart';
 
 class SignupScreen extends StatefulWidget {
   final bool returnToDoctorDashboard;

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/screens/common/chat/chatbot_screen.dart';
-import 'package:medivault_ai/screens/patient/find_doctors_screen.dart';
-import 'package:medivault_ai/screens/patient/gov_schemes_screen.dart';
-import 'package:medivault_ai/services/auth_service.dart';
-import 'package:medivault_ai/services/database_service.dart';
-import 'package:medivault_ai/services/appointment_service.dart';
+import 'package:health_buddy/screens/common/chat/chatbot_screen.dart';
+import 'package:health_buddy/screens/patient/find_doctors_screen.dart';
+import 'package:health_buddy/screens/patient/gov_schemes_screen.dart';
+import 'package:health_buddy/services/auth_service.dart';
+import 'package:health_buddy/services/database_service.dart';
+import 'package:health_buddy/services/appointment_service.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});

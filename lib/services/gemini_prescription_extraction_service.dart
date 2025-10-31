@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:medivault_ai/models/prescription.dart';
-import 'package:medivault_ai/services/ai_service.dart';
+import 'package:health_buddy/models/prescription.dart';
+import 'package:health_buddy/services/ai_service.dart';
 
 /// Service for extracting prescription data from images using Gemini Flash API
 /// Replaces Google ML Kit with Gemini's vision capabilities

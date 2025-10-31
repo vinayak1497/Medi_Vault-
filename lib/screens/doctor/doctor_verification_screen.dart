@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:medivault_ai/screens/doctor/doctor_login_screen.dart';
-import 'package:medivault_ai/screens/doctor/doctor_dashboard.dart';
+import 'package:health_buddy/screens/doctor/doctor_login_screen.dart';
+import 'package:health_buddy/screens/doctor/doctor_dashboard.dart';
 
 class DoctorVerificationScreen extends StatefulWidget {
   final String? email;
